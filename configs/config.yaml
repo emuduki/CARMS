@@ -1,0 +1,75 @@
+# ============================================================
+# CARMS — Central Configuration
+# ============================================================
+# Copy this to config.local.yaml and add your real API keys.
+# config.local.yaml is gitignored — never commit API keys.
+ 
+#  API Keys 
+api_keys:
+  news_api: "a5d953c22514408aa23d11496eaa7a06"        # newsapi.org (free)
+  fred_api: "ff68a45463cb4d6e97b4788cdf544bda"     # fred.stlouisfed.org (free)
+  binance_key: ""                     # Optional — public data needs no key
+  binance_secret: ""
+ 
+#  Assets 
+assets:
+  forex:
+    - symbol: "EURUSD=X"
+      name: "EUR/USD"
+      category: "forex"
+    - symbol: "KES=X"
+      name: "USD/KES"
+      category: "forex"
+ 
+  crypto:
+    - symbol: "BTC-USD"
+      name: "Bitcoin"
+      category: "crypto"
+    - symbol: "ETH-USD"
+      name: "Ethereum"
+      category: "crypto"
+ 
+  commodities:
+    - symbol: "GC=F"
+      name: "Gold"
+      category: "gold"
+ 
+#  Data Settings 
+data:
+  start_date: "2019-01-01"
+  end_date: "2024-12-31"
+  test_start: "2024-01-01"      # Last year = holdout test set
+ 
+  intervals:
+    daily: "1d"
+    hourly: "1h"
+    hourly_lookback_days: 730    # yfinance limits 1h to ~2 years
+ 
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  charts_dir: "data/charts"
+ 
+#  Feature Engineering 
+features:
+  technical_indicators:
+    - rsi_14
+    - macd
+    - bbands_20
+    - atr_14
+    - ema_20
+    - ema_50
+    - volume_sma_20
+    - stoch_14
+    - obv
+ 
+  chart_image:
+    window_size: 20          # Candles per image
+    image_size: 64           # 64x64 pixels
+    style: "charles"         # mplfinance chart style
+ 
+#  Logging 
+logging:
+  level: "INFO"
+  log_dir: "logs"
+  log_file: "carms.log"
+ 

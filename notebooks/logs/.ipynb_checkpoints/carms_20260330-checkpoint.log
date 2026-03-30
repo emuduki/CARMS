@@ -1,0 +1,15 @@
+2026-03-30 14:44:31,941 | WARNING  | src.ingestion.downloader | No cached data for EURUSD=X (daily) — run download first
+2026-03-30 14:44:31,943 | WARNING  | src.ingestion.downloader | No cached data for KES=X (daily) — run download first
+2026-03-30 14:44:31,947 | WARNING  | src.ingestion.downloader | No cached data for BTC-USD (daily) — run download first
+2026-03-30 14:44:31,950 | WARNING  | src.ingestion.downloader | No cached data for ETH-USD (daily) — run download first
+2026-03-30 14:44:31,953 | WARNING  | src.ingestion.downloader | No cached data for GC=F (daily) — run download first
+2026-03-30 16:34:11,887 | WARNING  | src.ingestion.downloader | No cached data for EURUSD=X (daily)
+2026-03-30 16:34:11,890 | WARNING  | src.ingestion.downloader | No cached data for KES=X (daily)
+2026-03-30 16:34:11,896 | WARNING  | src.ingestion.downloader | No cached data for BTC-USD (daily)
+2026-03-30 16:34:11,904 | WARNING  | src.ingestion.downloader | No cached data for ETH-USD (daily)
+2026-03-30 16:34:11,913 | WARNING  | src.ingestion.downloader | No cached data for GC=F (daily)
+2026-03-30 21:08:51,833 | WARNING  | src.ingestion.downloader | No cached data for EURUSD=X (daily)
+2026-03-30 21:08:51,840 | WARNING  | src.ingestion.downloader | No cached data for KES=X (daily)
+2026-03-30 21:08:51,853 | WARNING  | src.ingestion.downloader | No cached data for BTC-USD (daily)
+2026-03-30 21:08:51,883 | WARNING  | src.ingestion.downloader | No cached data for ETH-USD (daily)
+2026-03-30 21:08:51,889 | WARNING  | src.ingestion.downloader | No cached data for GC=F (daily)

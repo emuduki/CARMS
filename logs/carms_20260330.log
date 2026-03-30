@@ -1,0 +1,532 @@
+2026-03-30 11:20:18,091 | INFO     | phase1 | =======================================================
+2026-03-30 11:20:18,092 | INFO     | phase1 | PHASE 1 — Data Pipeline & Feature Engineering
+2026-03-30 11:20:18,092 | INFO     | phase1 | =======================================================
+2026-03-30 11:20:18,092 | INFO     | phase1 | Step 1/5 — Downloading OHLCV price data...
+2026-03-30 11:20:18,093 | INFO     | src.ingestion.downloader | Downloading EUR/USD (EURUSD=X)  [forex]
+2026-03-30 11:20:22,886 | ERROR    | src.ingestion.downloader |   ✗ Failed to download EURUSD=X: object of type 'NoneType' has no len()
+2026-03-30 11:20:23,387 | INFO     | src.ingestion.downloader | Downloading USD/KES (KES=X)  [forex]
+2026-03-30 11:20:25,193 | ERROR    | src.ingestion.downloader |   ✗ Failed to download KES=X: object of type 'NoneType' has no len()
+2026-03-30 11:20:25,695 | INFO     | src.ingestion.downloader | Downloading Bitcoin (BTC-USD)  [crypto]
+2026-03-30 11:20:27,640 | ERROR    | src.ingestion.downloader |   ✗ Failed to download BTC-USD: object of type 'NoneType' has no len()
+2026-03-30 11:20:28,141 | INFO     | src.ingestion.downloader | Downloading Ethereum (ETH-USD)  [crypto]
+2026-03-30 11:20:30,978 | ERROR    | src.ingestion.downloader |   ✗ Failed to download ETH-USD: object of type 'NoneType' has no len()
+2026-03-30 11:20:31,480 | INFO     | src.ingestion.downloader | Downloading Gold (GC=F)  [gold]
+2026-03-30 11:20:33,452 | ERROR    | src.ingestion.downloader |   ✗ Failed to download GC=F: object of type 'NoneType' has no len()
+2026-03-30 11:20:33,954 | INFO     | src.ingestion.downloader | Download complete — 5/5 assets succeeded
+2026-03-30 11:20:33,956 | INFO     | phase1 | Step 2/5 — Fetching news headlines...
+2026-03-30 11:20:33,960 | INFO     | src.ingestion.news_fetcher | Fetching news for EURUSD=X...
+2026-03-30 11:20:38,114 | INFO     | src.ingestion.news_fetcher | Fetching news for KES=X...
+2026-03-30 11:20:40,339 | INFO     | src.ingestion.news_fetcher | Fetching news for BTC-USD...
+2026-03-30 11:20:42,606 | INFO     | src.ingestion.news_fetcher | Fetching news for ETH-USD...
+2026-03-30 11:20:45,264 | INFO     | src.ingestion.news_fetcher | Fetching news for GC=F...
+2026-03-30 11:20:48,455 | INFO     | src.ingestion.news_fetcher | Saved 296 news articles → data\raw\news\headlines.csv
+2026-03-30 11:20:48,455 | INFO     | phase1 | Step 3/5 — Fetching macro indicators from FRED...
+2026-03-30 11:20:48,456 | INFO     | src.ingestion.news_fetcher | Fetching FRED: CPIAUCSL (US CPI (inflation))
+2026-03-30 11:20:50,226 | INFO     | src.ingestion.news_fetcher |   ✓ 72 observations
+2026-03-30 11:20:50,426 | INFO     | src.ingestion.news_fetcher | Fetching FRED: FEDFUNDS (Fed Funds Rate)
+2026-03-30 11:20:53,305 | INFO     | src.ingestion.news_fetcher |   ✓ 72 observations
+2026-03-30 11:20:53,507 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DGS10 (10-Year Treasury Yield)
+2026-03-30 11:20:55,165 | INFO     | src.ingestion.news_fetcher |   ✓ 1,501 observations
+2026-03-30 11:20:55,366 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DEXUSEU (USD/EUR Exchange Rate)
+2026-03-30 11:20:57,280 | INFO     | src.ingestion.news_fetcher |   ✓ 1,498 observations
+2026-03-30 11:20:57,481 | INFO     | src.ingestion.news_fetcher | Fetching FRED: GOLDAMGBD228NLBM (Gold Price (London Fix))
+2026-03-30 11:20:59,945 | WARNING  | src.ingestion.news_fetcher | FRED error for GOLDAMGBD228NLBM: 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=GOLDAMGBD228NLBM&api_key=ff68a45463cb4d6e97b4788cdf544bda&file_type=json&observation_start=2019-01-01&observation_end=2024-12-31
+2026-03-30 11:21:00,177 | INFO     | src.ingestion.news_fetcher | Saved macro data ((1528, 4)) → macro_fred.parquet
+2026-03-30 11:21:00,179 | INFO     | phase1 | Step 4/5 — Computing technical indicators...
+2026-03-30 11:21:00,180 | INFO     | src.features.indicators | Computing features for EURUSD=X (1,564 rows)
+2026-03-30 11:21:14,965 | INFO     | src.features.indicators |   ✓ 0 clean rows (1564 dropped for indicator warm-up)
+2026-03-30 11:21:14,989 | INFO     | src.features.indicators |   Saved → EURUSD_X_features.parquet  (29 features)
+2026-03-30 11:21:14,991 | INFO     | src.features.indicators | Computing features for KES=X (1,564 rows)
+2026-03-30 11:21:15,087 | INFO     | src.features.indicators |   ✓ 0 clean rows (1564 dropped for indicator warm-up)
+2026-03-30 11:21:15,096 | INFO     | src.features.indicators |   Saved → KES_X_features.parquet  (29 features)
+2026-03-30 11:21:15,097 | INFO     | src.features.indicators | Computing features for BTC-USD (2,191 rows)
+2026-03-30 11:21:15,210 | INFO     | src.features.indicators |   ✓ 2,142 clean rows (49 dropped for indicator warm-up)
+2026-03-30 11:21:15,279 | INFO     | src.features.indicators |   Saved → BTC_USD_features.parquet  (29 features)
+2026-03-30 11:21:15,283 | INFO     | src.features.indicators | Computing features for ETH-USD (2,191 rows)
+2026-03-30 11:21:15,404 | INFO     | src.features.indicators |   ✓ 2,142 clean rows (49 dropped for indicator warm-up)
+2026-03-30 11:21:15,446 | INFO     | src.features.indicators |   Saved → ETH_USD_features.parquet  (29 features)
+2026-03-30 11:21:15,447 | INFO     | src.features.indicators | Computing features for GC=F (1,509 rows)
+2026-03-30 11:21:15,558 | INFO     | src.features.indicators |   ✓ 1,460 clean rows (49 dropped for indicator warm-up)
+2026-03-30 11:21:15,607 | INFO     | src.features.indicators |   Saved → GC_F_features.parquet  (29 features)
+2026-03-30 11:21:15,608 | INFO     | src.features.indicators | Feature engineering complete — 5/5 assets
+2026-03-30 11:21:15,608 | INFO     | phase1 | Step 5/5 — Generating candlestick chart images...
+2026-03-30 11:21:15,611 | INFO     | src.features.chart_generator | Generating 0 chart images for EURUSD=X...
+2026-03-30 11:21:15,614 | INFO     | src.features.chart_generator |   ✓ 0 images saved → data\charts\EURUSD_X
+2026-03-30 11:21:15,622 | INFO     | src.features.chart_generator |   Metadata → EURUSD_X_metadata.csv
+2026-03-30 11:21:44,040 | INFO     | phase1 | =======================================================
+2026-03-30 11:21:44,041 | INFO     | phase1 | PHASE 1 — Data Pipeline & Feature Engineering
+2026-03-30 11:21:44,041 | INFO     | phase1 | =======================================================
+2026-03-30 11:21:44,041 | INFO     | phase1 | Step 1/5 — Downloading OHLCV price data...
+2026-03-30 11:21:44,042 | INFO     | src.ingestion.downloader | Downloading EUR/USD (EURUSD=X)  [forex]
+2026-03-30 11:21:47,248 | ERROR    | src.ingestion.downloader |   ✗ Failed to download EURUSD=X: object of type 'NoneType' has no len()
+2026-03-30 11:21:47,749 | INFO     | src.ingestion.downloader | Downloading USD/KES (KES=X)  [forex]
+2026-03-30 11:21:49,469 | ERROR    | src.ingestion.downloader |   ✗ Failed to download KES=X: object of type 'NoneType' has no len()
+2026-03-30 11:21:49,970 | INFO     | src.ingestion.downloader | Downloading Bitcoin (BTC-USD)  [crypto]
+2026-03-30 11:21:53,345 | ERROR    | src.ingestion.downloader |   ✗ Failed to download BTC-USD: object of type 'NoneType' has no len()
+2026-03-30 11:21:53,849 | INFO     | src.ingestion.downloader | Downloading Ethereum (ETH-USD)  [crypto]
+2026-03-30 11:21:56,500 | ERROR    | src.ingestion.downloader |   ✗ Failed to download ETH-USD: object of type 'NoneType' has no len()
+2026-03-30 11:21:57,001 | INFO     | src.ingestion.downloader | Downloading Gold (GC=F)  [gold]
+2026-03-30 11:21:59,326 | ERROR    | src.ingestion.downloader |   ✗ Failed to download GC=F: object of type 'NoneType' has no len()
+2026-03-30 11:21:59,827 | INFO     | src.ingestion.downloader | Download complete — 5/5 assets succeeded
+2026-03-30 11:21:59,827 | INFO     | phase1 | Step 2/5 — Fetching news headlines...
+2026-03-30 11:21:59,828 | INFO     | src.ingestion.news_fetcher | Fetching news for EURUSD=X...
+2026-03-30 11:22:04,219 | INFO     | src.ingestion.news_fetcher | Fetching news for KES=X...
+2026-03-30 11:22:07,504 | INFO     | src.ingestion.news_fetcher | Fetching news for BTC-USD...
+2026-03-30 11:22:10,632 | INFO     | src.ingestion.news_fetcher | Fetching news for ETH-USD...
+2026-03-30 11:22:14,065 | INFO     | src.ingestion.news_fetcher | Fetching news for GC=F...
+2026-03-30 11:22:17,771 | INFO     | src.ingestion.news_fetcher | Saved 296 news articles → data\raw\news\headlines.csv
+2026-03-30 11:22:17,772 | INFO     | phase1 | Step 3/5 — Fetching macro indicators from FRED...
+2026-03-30 11:22:17,773 | INFO     | src.ingestion.news_fetcher | Fetching FRED: CPIAUCSL (US CPI (inflation))
+2026-03-30 14:08:00,111 | INFO     | phase1 | =======================================================
+2026-03-30 14:08:00,112 | INFO     | phase1 | PHASE 1 — Data Pipeline & Feature Engineering
+2026-03-30 14:08:00,112 | INFO     | phase1 | =======================================================
+2026-03-30 14:08:00,113 | INFO     | phase1 | Step 1/5 — Downloading OHLCV price data...
+2026-03-30 14:08:00,114 | INFO     | src.ingestion.downloader | Downloading EUR/USD (EURUSD=X)  [forex]
+2026-03-30 14:08:06,723 | ERROR    | src.ingestion.downloader |   ✗ Failed to download EURUSD=X: object of type 'NoneType' has no len()
+2026-03-30 14:08:07,225 | INFO     | src.ingestion.downloader | Downloading USD/KES (KES=X)  [forex]
+2026-03-30 14:08:09,577 | ERROR    | src.ingestion.downloader |   ✗ Failed to download KES=X: object of type 'NoneType' has no len()
+2026-03-30 14:08:10,081 | INFO     | src.ingestion.downloader | Downloading Bitcoin (BTC-USD)  [crypto]
+2026-03-30 14:08:12,255 | ERROR    | src.ingestion.downloader |   ✗ Failed to download BTC-USD: object of type 'NoneType' has no len()
+2026-03-30 14:08:12,758 | INFO     | src.ingestion.downloader | Downloading Ethereum (ETH-USD)  [crypto]
+2026-03-30 14:08:15,019 | ERROR    | src.ingestion.downloader |   ✗ Failed to download ETH-USD: object of type 'NoneType' has no len()
+2026-03-30 14:08:15,525 | INFO     | src.ingestion.downloader | Downloading Gold (GC=F)  [gold]
+2026-03-30 14:08:17,669 | ERROR    | src.ingestion.downloader |   ✗ Failed to download GC=F: object of type 'NoneType' has no len()
+2026-03-30 14:08:18,174 | INFO     | src.ingestion.downloader | Download complete — 5/5 assets succeeded
+2026-03-30 14:08:18,175 | INFO     | phase1 | Step 2/5 — Fetching news headlines...
+2026-03-30 14:08:18,176 | INFO     | src.ingestion.news_fetcher | Fetching news for EURUSD=X...
+2026-03-30 14:08:29,620 | WARNING  | src.ingestion.news_fetcher | NewsAPI error for 'EUR USD': HTTPSConnectionPool(host='newsapi.org', port=443): Read timed out. (read timeout=10)
+2026-03-30 14:08:40,755 | WARNING  | src.ingestion.news_fetcher | NewsAPI error for 'euro dollar': HTTPSConnectionPool(host='newsapi.org', port=443): Read timed out. (read timeout=10)
+2026-03-30 14:08:41,056 | INFO     | src.ingestion.news_fetcher | Fetching news for KES=X...
+2026-03-30 14:08:52,172 | WARNING  | src.ingestion.news_fetcher | NewsAPI error for 'Kenya shilling': HTTPSConnectionPool(host='newsapi.org', port=443): Read timed out. (read timeout=10)
+2026-03-30 14:08:56,573 | INFO     | src.ingestion.news_fetcher | Fetching news for BTC-USD...
+2026-03-30 14:09:21,956 | INFO     | src.ingestion.news_fetcher | Fetching news for ETH-USD...
+2026-03-30 14:09:33,426 | INFO     | src.ingestion.news_fetcher | Fetching news for GC=F...
+2026-03-30 14:09:39,974 | INFO     | src.ingestion.news_fetcher | Saved 197 news articles → data\raw\news\headlines.csv
+2026-03-30 14:09:39,975 | INFO     | phase1 | Step 3/5 — Fetching macro indicators from FRED...
+2026-03-30 14:09:39,975 | INFO     | src.ingestion.news_fetcher | Fetching FRED: CPIAUCSL (US CPI (inflation))
+2026-03-30 14:09:41,943 | INFO     | src.ingestion.news_fetcher |   ✓ 72 observations
+2026-03-30 14:09:42,144 | INFO     | src.ingestion.news_fetcher | Fetching FRED: FEDFUNDS (Fed Funds Rate)
+2026-03-30 14:09:43,580 | INFO     | src.ingestion.news_fetcher |   ✓ 72 observations
+2026-03-30 14:09:43,781 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DGS10 (10-Year Treasury Yield)
+2026-03-30 14:09:45,228 | INFO     | src.ingestion.news_fetcher |   ✓ 1,501 observations
+2026-03-30 14:09:45,429 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DEXUSEU (USD/EUR Exchange Rate)
+2026-03-30 14:09:46,968 | INFO     | src.ingestion.news_fetcher |   ✓ 1,498 observations
+2026-03-30 14:09:47,170 | INFO     | src.ingestion.news_fetcher | Fetching FRED: GOLDAMGBD228NLBM (Gold Price (London Fix))
+2026-03-30 14:09:48,584 | WARNING  | src.ingestion.news_fetcher | FRED error for GOLDAMGBD228NLBM: 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=GOLDAMGBD228NLBM&api_key=ff68a45463cb4d6e97b4788cdf544bda&file_type=json&observation_start=2019-01-01&observation_end=2024-12-31
+2026-03-30 14:09:48,818 | INFO     | src.ingestion.news_fetcher | Saved macro data ((1528, 4)) → macro_fred.parquet
+2026-03-30 14:09:48,820 | INFO     | phase1 | Step 4/5 — Computing technical indicators...
+2026-03-30 14:09:48,821 | INFO     | src.features.indicators | Computing features for EURUSD=X (1,564 rows)
+2026-03-30 14:09:53,534 | INFO     | src.features.indicators |   ✓ 0 clean rows (1564 dropped for indicator warm-up)
+2026-03-30 14:09:53,544 | INFO     | src.features.indicators |   Saved → EURUSD_X_features.parquet  (29 features)
+2026-03-30 14:09:53,545 | INFO     | src.features.indicators | Computing features for KES=X (1,564 rows)
+2026-03-30 14:09:53,610 | INFO     | src.features.indicators |   ✓ 0 clean rows (1564 dropped for indicator warm-up)
+2026-03-30 14:09:53,620 | INFO     | src.features.indicators |   Saved → KES_X_features.parquet  (29 features)
+2026-03-30 14:09:53,621 | INFO     | src.features.indicators | Computing features for BTC-USD (2,191 rows)
+2026-03-30 14:09:53,679 | INFO     | src.features.indicators |   ✓ 2,142 clean rows (49 dropped for indicator warm-up)
+2026-03-30 14:09:53,710 | INFO     | src.features.indicators |   Saved → BTC_USD_features.parquet  (29 features)
+2026-03-30 14:09:53,710 | INFO     | src.features.indicators | Computing features for ETH-USD (2,191 rows)
+2026-03-30 14:09:53,766 | INFO     | src.features.indicators |   ✓ 2,142 clean rows (49 dropped for indicator warm-up)
+2026-03-30 14:09:53,792 | INFO     | src.features.indicators |   Saved → ETH_USD_features.parquet  (29 features)
+2026-03-30 14:09:53,793 | INFO     | src.features.indicators | Computing features for GC=F (1,509 rows)
+2026-03-30 14:09:53,848 | INFO     | src.features.indicators |   ✓ 1,460 clean rows (49 dropped for indicator warm-up)
+2026-03-30 14:09:53,875 | INFO     | src.features.indicators |   Saved → GC_F_features.parquet  (29 features)
+2026-03-30 14:09:53,875 | INFO     | src.features.indicators | Feature engineering complete — 5/5 assets
+2026-03-30 14:09:53,876 | INFO     | phase1 | Step 5/5 — Generating candlestick chart images...
+2026-03-30 14:09:53,880 | INFO     | src.features.chart_generator | Generating 0 chart images for EURUSD=X...
+2026-03-30 14:09:53,884 | INFO     | src.features.chart_generator |   ✓ 0 images saved → data\charts\EURUSD_X
+2026-03-30 14:09:53,886 | INFO     | src.features.chart_generator |   Metadata → EURUSD_X_metadata.csv
+2026-03-30 14:21:52,963 | INFO     | phase1 | =======================================================
+2026-03-30 14:21:52,964 | INFO     | phase1 | PHASE 1 — Data Pipeline & Feature Engineering
+2026-03-30 14:21:52,965 | INFO     | phase1 | =======================================================
+2026-03-30 14:21:52,965 | INFO     | phase1 | Step 1/5 — Downloading OHLCV price data...
+2026-03-30 14:21:52,966 | INFO     | src.ingestion.downloader | Downloading EUR/USD (EURUSD=X)  [forex]
+2026-03-30 14:22:08,222 | INFO     | src.ingestion.downloader |   ✓ EUR/USD: 1,564 daily rows | 0 hourly rows
+2026-03-30 14:22:08,723 | INFO     | src.ingestion.downloader | Downloading USD/KES (KES=X)  [forex]
+2026-03-30 14:22:18,895 | INFO     | src.ingestion.downloader |   ✓ USD/KES: 1,564 daily rows | 0 hourly rows
+2026-03-30 14:22:19,396 | INFO     | src.ingestion.downloader | Downloading Bitcoin (BTC-USD)  [crypto]
+2026-03-30 14:22:29,401 | ERROR    | src.ingestion.downloader |   ✗ Failed to download BTC-USD: 'NoneType' object is not subscriptable
+2026-03-30 14:22:29,902 | INFO     | src.ingestion.downloader | Downloading Ethereum (ETH-USD)  [crypto]
+2026-03-30 14:22:35,891 | INFO     | src.ingestion.downloader |   ✓ Ethereum: 2,191 daily rows | 0 hourly rows
+2026-03-30 14:22:36,392 | INFO     | src.ingestion.downloader | Downloading Gold (GC=F)  [gold]
+2026-03-30 14:22:40,291 | INFO     | src.ingestion.downloader |   ✓ Gold: 1,509 daily rows | 0 hourly rows
+2026-03-30 14:22:40,792 | INFO     | src.ingestion.downloader | Download complete — 4/5 assets succeeded
+2026-03-30 14:22:40,793 | INFO     | phase1 | Step 2/5 — Fetching news headlines...
+2026-03-30 14:22:40,794 | INFO     | src.ingestion.news_fetcher | Fetching news for EURUSD=X...
+2026-03-30 14:22:59,224 | INFO     | src.ingestion.news_fetcher | Fetching news for KES=X...
+2026-03-30 14:23:08,768 | INFO     | src.ingestion.news_fetcher | Fetching news for BTC-USD...
+2026-03-30 14:23:17,258 | INFO     | src.ingestion.news_fetcher | Fetching news for ETH-USD...
+2026-03-30 14:23:33,014 | INFO     | src.ingestion.news_fetcher | Fetching news for GC=F...
+2026-03-30 14:23:55,372 | INFO     | src.ingestion.news_fetcher | Saved 295 news articles → data\raw\news\headlines.csv
+2026-03-30 14:23:55,382 | INFO     | phase1 | Step 3/5 — Fetching macro indicators from FRED...
+2026-03-30 14:23:55,405 | INFO     | src.ingestion.news_fetcher | Fetching FRED: CPIAUCSL (US CPI (inflation))
+2026-03-30 14:24:04,950 | INFO     | src.ingestion.news_fetcher |   ✓ 72 observations
+2026-03-30 14:24:05,151 | INFO     | src.ingestion.news_fetcher | Fetching FRED: FEDFUNDS (Fed Funds Rate)
+2026-03-30 14:24:07,441 | INFO     | src.ingestion.news_fetcher |   ✓ 72 observations
+2026-03-30 14:24:07,658 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DGS10 (10-Year Treasury Yield)
+2026-03-30 14:24:11,987 | INFO     | src.ingestion.news_fetcher |   ✓ 1,501 observations
+2026-03-30 14:24:12,188 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DEXUSEU (USD/EUR Exchange Rate)
+2026-03-30 14:24:21,649 | INFO     | src.ingestion.news_fetcher |   ✓ 1,498 observations
+2026-03-30 14:24:21,850 | INFO     | src.ingestion.news_fetcher | Fetching FRED: GOLDAMGBD228NLBM (Gold Price (London Fix))
+2026-03-30 14:24:24,019 | WARNING  | src.ingestion.news_fetcher | FRED error for GOLDAMGBD228NLBM: 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=GOLDAMGBD228NLBM&api_key=ff68a45463cb4d6e97b4788cdf544bda&file_type=json&observation_start=2019-01-01&observation_end=2024-12-31
+2026-03-30 14:24:24,269 | INFO     | src.ingestion.news_fetcher | Saved macro data ((1528, 4)) → macro_fred.parquet
+2026-03-30 14:24:24,279 | INFO     | phase1 | Step 4/5 — Computing technical indicators...
+2026-03-30 14:24:24,292 | INFO     | src.features.indicators | Computing features for EURUSD=X (1,564 rows)
+2026-03-30 14:24:25,805 | INFO     | src.features.indicators |   ✓ 0 clean rows (1564 dropped for indicator warm-up)
+2026-03-30 14:24:25,825 | INFO     | src.features.indicators |   Saved → EURUSD_X_features.parquet  (29 features)
+2026-03-30 14:24:25,828 | INFO     | src.features.indicators | Computing features for KES=X (1,564 rows)
+2026-03-30 14:24:25,968 | INFO     | src.features.indicators |   ✓ 0 clean rows (1564 dropped for indicator warm-up)
+2026-03-30 14:24:25,992 | INFO     | src.features.indicators |   Saved → KES_X_features.parquet  (29 features)
+2026-03-30 14:24:25,996 | INFO     | src.features.indicators | Computing features for ETH-USD (2,191 rows)
+2026-03-30 14:24:26,087 | INFO     | src.features.indicators |   ✓ 2,142 clean rows (49 dropped for indicator warm-up)
+2026-03-30 14:24:26,122 | INFO     | src.features.indicators |   Saved → ETH_USD_features.parquet  (29 features)
+2026-03-30 14:24:26,123 | INFO     | src.features.indicators | Computing features for GC=F (1,509 rows)
+2026-03-30 14:24:26,202 | INFO     | src.features.indicators |   ✓ 1,460 clean rows (49 dropped for indicator warm-up)
+2026-03-30 14:24:26,229 | INFO     | src.features.indicators |   Saved → GC_F_features.parquet  (29 features)
+2026-03-30 14:24:26,230 | INFO     | src.features.indicators | Feature engineering complete — 4/4 assets
+2026-03-30 14:24:26,230 | INFO     | phase1 | Step 5/5 — Generating candlestick chart images...
+2026-03-30 14:24:26,234 | INFO     | src.features.chart_generator | Generating 0 chart images for EURUSD=X...
+2026-03-30 14:24:26,237 | INFO     | src.features.chart_generator |   ✓ 0 images saved → data\charts\EURUSD_X
+2026-03-30 14:24:26,238 | INFO     | src.features.chart_generator |   Metadata → EURUSD_X_metadata.csv
+2026-03-30 14:28:18,929 | INFO     | phase1 | =======================================================
+2026-03-30 14:28:18,929 | INFO     | phase1 | PHASE 1 — Data Pipeline & Feature Engineering
+2026-03-30 14:28:18,930 | INFO     | phase1 | =======================================================
+2026-03-30 14:28:18,930 | INFO     | phase1 | Step 1/5 — Downloading OHLCV price data...
+2026-03-30 14:28:18,931 | INFO     | src.ingestion.downloader | Downloading EUR/USD (EURUSD=X)  [forex]
+2026-03-30 14:28:25,549 | INFO     | src.ingestion.downloader |   ✓ EUR/USD: 1,564 daily rows | 17,239 hourly rows
+2026-03-30 14:28:26,050 | INFO     | src.ingestion.downloader | Downloading USD/KES (KES=X)  [forex]
+2026-03-30 14:28:31,610 | INFO     | src.ingestion.downloader |   ✓ USD/KES: 1,564 daily rows | 7,441 hourly rows
+2026-03-30 14:28:32,111 | INFO     | src.ingestion.downloader | Downloading Bitcoin (BTC-USD)  [crypto]
+2026-03-30 14:28:36,323 | INFO     | src.ingestion.downloader |   ✓ Bitcoin: 2,191 daily rows | 17,328 hourly rows
+2026-03-30 14:28:36,824 | INFO     | src.ingestion.downloader | Downloading Ethereum (ETH-USD)  [crypto]
+2026-03-30 14:28:49,795 | WARNING  | src.ingestion.downloader |   ✗ No data returned for ETH-USD
+2026-03-30 14:28:50,296 | INFO     | src.ingestion.downloader | Downloading Gold (GC=F)  [gold]
+2026-03-30 14:28:58,546 | INFO     | src.ingestion.downloader |   ✓ Gold: 1,509 daily rows | 13,704 hourly rows
+2026-03-30 14:28:59,047 | INFO     | src.ingestion.downloader | Download complete — 4/5 assets succeeded
+2026-03-30 14:28:59,048 | INFO     | phase1 | Step 2/5 — Fetching news headlines...
+2026-03-30 14:28:59,049 | INFO     | src.ingestion.news_fetcher | Fetching news for EURUSD=X...
+2026-03-30 14:29:18,615 | INFO     | src.ingestion.news_fetcher | Fetching news for KES=X...
+2026-03-30 14:29:23,021 | INFO     | src.ingestion.news_fetcher | Fetching news for BTC-USD...
+2026-03-30 14:29:33,157 | INFO     | src.ingestion.news_fetcher | Fetching news for ETH-USD...
+2026-03-30 14:30:02,667 | INFO     | src.ingestion.news_fetcher | Fetching news for GC=F...
+2026-03-30 14:30:40,790 | WARNING  | src.ingestion.news_fetcher | NewsAPI timeout for 'XAUUSD' — retrying...
+2026-03-30 14:30:47,599 | INFO     | src.ingestion.news_fetcher | Saved 295 news articles → data\raw\news\headlines.csv
+2026-03-30 14:30:47,600 | INFO     | phase1 | Step 3/5 — Fetching macro indicators from FRED...
+2026-03-30 14:30:47,601 | INFO     | src.ingestion.news_fetcher | Fetching FRED: CPIAUCSL (US CPI (inflation))
+2026-03-30 14:30:49,245 | WARNING  | src.ingestion.news_fetcher | FRED error for CPIAUCSL: 500 Server Error: Internal Server Error for url: https://api.stlouisfed.org/fred/series/observations?series_id=CPIAUCSL&api_key=ff68a45463cb4d6e97b4788cdf544bda&file_type=json&observation_start=2019-01-01&observation_end=2024-12-31
+2026-03-30 14:30:49,449 | INFO     | src.ingestion.news_fetcher | Fetching FRED: FEDFUNDS (Fed Funds Rate)
+2026-03-30 14:30:50,794 | INFO     | src.ingestion.news_fetcher |   ✓ 72 observations
+2026-03-30 14:30:50,995 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DGS10 (10-Year Treasury Yield)
+2026-03-30 14:30:52,216 | WARNING  | src.ingestion.news_fetcher | FRED error for DGS10: 500 Server Error: Internal Server Error for url: https://api.stlouisfed.org/fred/series/observations?series_id=DGS10&api_key=ff68a45463cb4d6e97b4788cdf544bda&file_type=json&observation_start=2019-01-01&observation_end=2024-12-31
+2026-03-30 14:30:52,421 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DEXUSEU (USD/EUR Exchange Rate)
+2026-03-30 14:30:53,546 | WARNING  | src.ingestion.news_fetcher | FRED error for DEXUSEU: 500 Server Error: Internal Server Error for url: https://api.stlouisfed.org/fred/series/observations?series_id=DEXUSEU&api_key=ff68a45463cb4d6e97b4788cdf544bda&file_type=json&observation_start=2019-01-01&observation_end=2024-12-31
+2026-03-30 14:30:53,749 | INFO     | src.ingestion.news_fetcher | Fetching FRED: GOLDAMGBD228NLBM (Gold Price (London Fix))
+2026-03-30 14:31:04,228 | WARNING  | src.ingestion.news_fetcher | FRED error for GOLDAMGBD228NLBM: 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=GOLDAMGBD228NLBM&api_key=ff68a45463cb4d6e97b4788cdf544bda&file_type=json&observation_start=2019-01-01&observation_end=2024-12-31
+2026-03-30 14:31:04,438 | INFO     | src.ingestion.news_fetcher | Saved macro data ((72, 1)) → macro_fred.parquet
+2026-03-30 14:31:04,438 | INFO     | phase1 | Step 4/5 — Computing technical indicators...
+2026-03-30 14:31:04,440 | INFO     | src.features.indicators | Computing features for EURUSD=X (1,564 rows)
+2026-03-30 14:31:05,310 | INFO     | src.features.indicators |   ✓ 0 clean rows (1564 dropped for indicator warm-up)
+2026-03-30 14:31:05,320 | INFO     | src.features.indicators |   Saved → EURUSD_X_features.parquet  (29 features)
+2026-03-30 14:31:05,320 | INFO     | src.features.indicators | Computing features for KES=X (1,564 rows)
+2026-03-30 14:31:05,392 | INFO     | src.features.indicators |   ✓ 0 clean rows (1564 dropped for indicator warm-up)
+2026-03-30 14:31:05,402 | INFO     | src.features.indicators |   Saved → KES_X_features.parquet  (29 features)
+2026-03-30 14:31:05,405 | INFO     | src.features.indicators | Computing features for BTC-USD (2,191 rows)
+2026-03-30 14:31:05,478 | INFO     | src.features.indicators |   ✓ 2,142 clean rows (49 dropped for indicator warm-up)
+2026-03-30 14:31:05,501 | INFO     | src.features.indicators |   Saved → BTC_USD_features.parquet  (29 features)
+2026-03-30 14:31:05,502 | INFO     | src.features.indicators | Computing features for GC=F (1,509 rows)
+2026-03-30 14:31:05,574 | INFO     | src.features.indicators |   ✓ 1,460 clean rows (49 dropped for indicator warm-up)
+2026-03-30 14:31:05,594 | INFO     | src.features.indicators |   Saved → GC_F_features.parquet  (29 features)
+2026-03-30 14:31:05,594 | INFO     | src.features.indicators | Feature engineering complete — 4/4 assets
+2026-03-30 14:31:05,595 | INFO     | phase1 | Step 5/5 — Generating candlestick chart images...
+2026-03-30 14:31:05,597 | INFO     | src.features.chart_generator | Generating 0 chart images for EURUSD=X...
+2026-03-30 14:31:05,600 | INFO     | src.features.chart_generator |   ✓ 0 images saved → data\charts\EURUSD_X
+2026-03-30 14:31:05,601 | INFO     | src.features.chart_generator |   Metadata → EURUSD_X_metadata.csv
+2026-03-30 14:37:36,918 | INFO     | phase1 | =======================================================
+2026-03-30 14:37:36,919 | INFO     | phase1 | PHASE 1 — Data Pipeline & Feature Engineering
+2026-03-30 14:37:36,920 | INFO     | phase1 | =======================================================
+2026-03-30 14:37:36,920 | INFO     | phase1 | Step 1/5 — Downloading OHLCV price data...
+2026-03-30 14:37:36,921 | INFO     | src.ingestion.downloader | Downloading EUR/USD (EURUSD=X)  [forex]
+2026-03-30 14:38:01,906 | WARNING  | src.ingestion.downloader |   ✗ No data returned for EURUSD=X
+2026-03-30 14:38:02,407 | INFO     | src.ingestion.downloader | Downloading USD/KES (KES=X)  [forex]
+2026-03-30 14:38:06,519 | INFO     | src.ingestion.downloader |   ✓ USD/KES: 1,564 daily rows | 7,441 hourly rows
+2026-03-30 14:38:07,020 | INFO     | src.ingestion.downloader | Downloading Bitcoin (BTC-USD)  [crypto]
+2026-03-30 14:38:11,301 | INFO     | src.ingestion.downloader |   ✓ Bitcoin: 2,191 daily rows | 17,328 hourly rows
+2026-03-30 14:38:11,802 | INFO     | src.ingestion.downloader | Downloading Ethereum (ETH-USD)  [crypto]
+2026-03-30 14:38:23,188 | INFO     | src.ingestion.downloader |   ✓ Ethereum: 2,191 daily rows | 0 hourly rows
+2026-03-30 14:38:23,691 | INFO     | src.ingestion.downloader | Downloading Gold (GC=F)  [gold]
+2026-03-30 14:38:43,803 | WARNING  | src.ingestion.downloader |   ✗ No data returned for GC=F
+2026-03-30 14:38:44,304 | INFO     | src.ingestion.downloader | Download complete — 3/5 assets succeeded
+2026-03-30 14:38:44,305 | INFO     | phase1 | Step 2/5 — Fetching news headlines...
+2026-03-30 14:38:44,306 | INFO     | src.ingestion.news_fetcher | Fetching news for EURUSD=X...
+2026-03-30 14:39:07,589 | INFO     | src.ingestion.news_fetcher | Fetching news for KES=X...
+2026-03-30 14:39:14,485 | INFO     | src.ingestion.news_fetcher | Fetching news for BTC-USD...
+2026-03-30 14:39:25,544 | INFO     | src.ingestion.news_fetcher | Fetching news for ETH-USD...
+2026-03-30 14:39:39,065 | INFO     | src.ingestion.news_fetcher | Fetching news for GC=F...
+2026-03-30 14:39:48,014 | INFO     | src.ingestion.news_fetcher | Saved 345 news articles → data\raw\news\headlines.csv
+2026-03-30 14:39:48,015 | INFO     | phase1 | Step 3/5 — Fetching macro indicators from FRED...
+2026-03-30 14:39:48,015 | INFO     | src.ingestion.news_fetcher | Fetching FRED: CPIAUCSL (US CPI (inflation))
+2026-03-30 14:39:49,631 | INFO     | src.ingestion.news_fetcher |   ✓ 72 observations
+2026-03-30 14:39:49,932 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DFF (Fed Funds Rate (daily))
+2026-03-30 14:39:51,287 | INFO     | src.ingestion.news_fetcher |   ✓ 2,192 observations
+2026-03-30 14:39:51,588 | INFO     | src.ingestion.news_fetcher | Fetching FRED: T10Y2Y (10Y-2Y Treasury spread)
+2026-03-30 14:39:55,503 | INFO     | src.ingestion.news_fetcher |   ✓ 1,501 observations
+2026-03-30 14:39:55,804 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DEXUSEU (USD/EUR Exchange Rate)
+2026-03-30 14:39:57,637 | INFO     | src.ingestion.news_fetcher |   ✓ 1,498 observations
+2026-03-30 14:39:57,938 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DEXCHUS (USD/CNY Exchange Rate)
+2026-03-30 14:39:59,744 | INFO     | src.ingestion.news_fetcher |   ✓ 1,498 observations
+2026-03-30 14:40:00,044 | INFO     | src.ingestion.news_fetcher | Fetching FRED: GOLDAMGBD228NLBM (Gold Price London Fix)
+2026-03-30 14:40:01,496 | WARNING  | src.ingestion.news_fetcher |   FRED HTTP error for GOLDAMGBD228NLBM: 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=GOLDAMGBD228NLBM&api_key=ff68a45463cb4d6e97b4788cdf544bda&file_type=json&observation_start=2019-01-01&observation_end=2024-12-31
+2026-03-30 14:40:01,499 | WARNING  | src.ingestion.news_fetcher |   ✗ No data for GOLDAMGBD228NLBM — skipping
+2026-03-30 14:40:01,821 | INFO     | src.ingestion.news_fetcher | Saved macro data (2192, 5) → macro_fred.parquet
+2026-03-30 14:40:01,821 | INFO     | phase1 | Step 4/5 — Computing technical indicators...
+2026-03-30 14:40:01,823 | INFO     | src.features.indicators | Computing features for KES=X (1,564 rows)  [volume=no — forex]
+2026-03-30 14:40:02,676 | INFO     | src.features.indicators |   ✓ 1,515 clean rows (49 dropped for indicator warm-up)
+2026-03-30 14:40:02,694 | INFO     | src.features.indicators |   Saved → KES_X_features.parquet  (29 features)
+2026-03-30 14:40:02,696 | INFO     | src.features.indicators | Computing features for BTC-USD (2,191 rows)  [volume=yes]
+2026-03-30 14:40:02,831 | INFO     | src.features.indicators |   ✓ 2,142 clean rows (49 dropped for indicator warm-up)
+2026-03-30 14:40:02,864 | INFO     | src.features.indicators |   Saved → BTC_USD_features.parquet  (29 features)
+2026-03-30 14:40:02,866 | INFO     | src.features.indicators | Computing features for ETH-USD (2,191 rows)  [volume=yes]
+2026-03-30 14:40:02,947 | INFO     | src.features.indicators |   ✓ 2,142 clean rows (49 dropped for indicator warm-up)
+2026-03-30 14:40:02,974 | INFO     | src.features.indicators |   Saved → ETH_USD_features.parquet  (29 features)
+2026-03-30 14:40:02,975 | INFO     | src.features.indicators | Feature engineering complete — 3/3 assets
+2026-03-30 14:40:02,977 | INFO     | phase1 | Step 5/5 — Generating candlestick chart images...
+2026-03-30 14:40:02,985 | INFO     | src.features.chart_generator | Generating 1,490 chart images for KES=X...
+2026-03-30 14:40:05,058 | INFO     | src.features.chart_generator |   ✓ 0 images saved → data\charts\KES_X
+2026-03-30 14:40:05,058 | INFO     | src.features.chart_generator |   Metadata → KES_X_metadata.csv
+2026-03-30 14:40:05,059 | INFO     | src.features.chart_generator |   Label balance (1d up): 54.7%
+2026-03-30 14:40:05,069 | INFO     | src.features.chart_generator | Generating 2,117 chart images for BTC-USD...
+2026-03-30 14:40:07,928 | INFO     | src.features.chart_generator |   ✓ 0 images saved → data\charts\BTC_USD
+2026-03-30 14:40:07,928 | INFO     | src.features.chart_generator |   Metadata → BTC_USD_metadata.csv
+2026-03-30 14:40:07,929 | INFO     | src.features.chart_generator |   Label balance (1d up): 51.3%
+2026-03-30 14:40:07,934 | INFO     | src.features.chart_generator | Generating 2,117 chart images for ETH-USD...
+2026-03-30 14:40:10,830 | INFO     | src.features.chart_generator |   ✓ 0 images saved → data\charts\ETH_USD
+2026-03-30 14:40:10,831 | INFO     | src.features.chart_generator |   Metadata → ETH_USD_metadata.csv
+2026-03-30 14:40:10,831 | INFO     | src.features.chart_generator |   Label balance (1d up): 52.0%
+2026-03-30 14:40:10,832 | INFO     | phase1 | Phase 1 complete!
+2026-03-30 14:41:05,916 | INFO     | phase1 | =======================================================
+2026-03-30 14:41:05,917 | INFO     | phase1 | PHASE 1 — Data Pipeline & Feature Engineering
+2026-03-30 14:41:05,917 | INFO     | phase1 | =======================================================
+2026-03-30 14:41:05,918 | INFO     | phase1 | Step 1/5 — Downloading OHLCV price data...
+2026-03-30 14:41:05,918 | INFO     | src.ingestion.downloader | Downloading EUR/USD (EURUSD=X)  [forex]
+2026-03-30 14:41:11,306 | INFO     | src.ingestion.downloader |   ✓ EUR/USD: 1,564 daily rows | 17,239 hourly rows
+2026-03-30 14:41:11,808 | INFO     | src.ingestion.downloader | Downloading USD/KES (KES=X)  [forex]
+2026-03-30 14:41:14,721 | INFO     | src.ingestion.downloader |   ✓ USD/KES: 1,564 daily rows | 7,441 hourly rows
+2026-03-30 14:41:15,223 | INFO     | src.ingestion.downloader | Downloading Bitcoin (BTC-USD)  [crypto]
+2026-03-30 14:41:19,716 | INFO     | src.ingestion.downloader |   ✓ Bitcoin: 2,191 daily rows | 17,328 hourly rows
+2026-03-30 14:41:20,217 | INFO     | src.ingestion.downloader | Downloading Ethereum (ETH-USD)  [crypto]
+2026-03-30 14:41:31,571 | INFO     | src.ingestion.downloader |   ✓ Ethereum: 2,191 daily rows | 0 hourly rows
+2026-03-30 14:41:32,072 | INFO     | src.ingestion.downloader | Downloading Gold (GC=F)  [gold]
+2026-03-30 14:41:52,146 | WARNING  | src.ingestion.downloader |   ✗ No data returned for GC=F
+2026-03-30 14:41:52,652 | INFO     | src.ingestion.downloader | Download complete — 4/5 assets succeeded
+2026-03-30 14:41:52,653 | INFO     | phase1 | Step 2/5 — Fetching news headlines...
+2026-03-30 14:41:52,655 | INFO     | src.ingestion.news_fetcher | Fetching news for EURUSD=X...
+2026-03-30 14:42:26,512 | INFO     | src.ingestion.news_fetcher | Fetching news for KES=X...
+2026-03-30 14:42:35,603 | INFO     | src.ingestion.news_fetcher | Fetching news for BTC-USD...
+2026-03-30 14:43:06,326 | INFO     | src.ingestion.news_fetcher | Fetching news for ETH-USD...
+2026-03-30 14:43:30,598 | INFO     | src.ingestion.news_fetcher | Fetching news for GC=F...
+2026-03-30 14:43:50,300 | INFO     | src.ingestion.news_fetcher | Saved 345 news articles → data\raw\news\headlines.csv
+2026-03-30 14:43:50,302 | INFO     | phase1 | Step 3/5 — Fetching macro indicators from FRED...
+2026-03-30 14:43:50,302 | INFO     | src.ingestion.news_fetcher | Fetching FRED: CPIAUCSL (US CPI (inflation))
+2026-03-30 14:43:52,009 | INFO     | src.ingestion.news_fetcher |   ✓ 72 observations
+2026-03-30 14:43:52,311 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DFF (Fed Funds Rate (daily))
+2026-03-30 14:43:53,477 | INFO     | src.ingestion.news_fetcher |   ✓ 2,192 observations
+2026-03-30 14:43:53,779 | INFO     | src.ingestion.news_fetcher | Fetching FRED: T10Y2Y (10Y-2Y Treasury spread)
+2026-03-30 14:43:54,989 | INFO     | src.ingestion.news_fetcher |   ✓ 1,501 observations
+2026-03-30 14:43:55,290 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DEXUSEU (USD/EUR Exchange Rate)
+2026-03-30 14:43:56,436 | INFO     | src.ingestion.news_fetcher |   ✓ 1,498 observations
+2026-03-30 14:43:56,738 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DEXCHUS (USD/CNY Exchange Rate)
+2026-03-30 14:43:57,955 | INFO     | src.ingestion.news_fetcher |   ✓ 1,498 observations
+2026-03-30 14:43:58,256 | INFO     | src.ingestion.news_fetcher | Fetching FRED: GOLDAMGBD228NLBM (Gold Price London Fix)
+2026-03-30 14:43:59,432 | WARNING  | src.ingestion.news_fetcher |   FRED HTTP error for GOLDAMGBD228NLBM: 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=GOLDAMGBD228NLBM&api_key=ff68a45463cb4d6e97b4788cdf544bda&file_type=json&observation_start=2019-01-01&observation_end=2024-12-31
+2026-03-30 14:43:59,437 | WARNING  | src.ingestion.news_fetcher |   ✗ No data for GOLDAMGBD228NLBM — skipping
+2026-03-30 14:43:59,773 | INFO     | src.ingestion.news_fetcher | Saved macro data (2192, 5) → macro_fred.parquet
+2026-03-30 14:43:59,775 | INFO     | phase1 | Step 4/5 — Computing technical indicators...
+2026-03-30 14:43:59,777 | INFO     | src.features.indicators | Computing features for EURUSD=X (1,564 rows)  [volume=no — forex]
+2026-03-30 14:44:00,428 | INFO     | src.features.indicators |   ✓ 1,515 clean rows (49 dropped for indicator warm-up)
+2026-03-30 14:44:00,447 | INFO     | src.features.indicators |   Saved → EURUSD_X_features.parquet  (29 features)
+2026-03-30 14:44:00,448 | INFO     | src.features.indicators | Computing features for KES=X (1,564 rows)  [volume=no — forex]
+2026-03-30 14:44:00,495 | INFO     | src.features.indicators |   ✓ 1,515 clean rows (49 dropped for indicator warm-up)
+2026-03-30 14:44:00,513 | INFO     | src.features.indicators |   Saved → KES_X_features.parquet  (29 features)
+2026-03-30 14:44:00,515 | INFO     | src.features.indicators | Computing features for BTC-USD (2,191 rows)  [volume=yes]
+2026-03-30 14:44:00,603 | INFO     | src.features.indicators |   ✓ 2,142 clean rows (49 dropped for indicator warm-up)
+2026-03-30 14:44:00,636 | INFO     | src.features.indicators |   Saved → BTC_USD_features.parquet  (29 features)
+2026-03-30 14:44:00,637 | INFO     | src.features.indicators | Computing features for ETH-USD (2,191 rows)  [volume=yes]
+2026-03-30 14:44:00,739 | INFO     | src.features.indicators |   ✓ 2,142 clean rows (49 dropped for indicator warm-up)
+2026-03-30 14:44:00,782 | INFO     | src.features.indicators |   Saved → ETH_USD_features.parquet  (29 features)
+2026-03-30 14:44:00,784 | INFO     | src.features.indicators | Feature engineering complete — 4/4 assets
+2026-03-30 14:44:00,784 | INFO     | phase1 | Step 5/5 — Generating candlestick chart images...
+2026-03-30 14:44:00,788 | INFO     | src.features.chart_generator | Generating 100 chart images for EURUSD=X...
+2026-03-30 14:44:00,942 | INFO     | src.features.chart_generator |   ✓ 0 images saved → data\charts\EURUSD_X
+2026-03-30 14:44:00,942 | INFO     | src.features.chart_generator |   Metadata → EURUSD_X_metadata.csv
+2026-03-30 14:44:00,944 | INFO     | src.features.chart_generator |   Label balance (1d up): 46.0%
+2026-03-30 14:44:00,948 | INFO     | src.features.chart_generator | Generating 100 chart images for KES=X...
+2026-03-30 14:44:01,120 | INFO     | src.features.chart_generator |   ✓ 0 images saved → data\charts\KES_X
+2026-03-30 14:44:01,121 | INFO     | src.features.chart_generator |   Metadata → KES_X_metadata.csv
+2026-03-30 14:44:01,121 | INFO     | src.features.chart_generator |   Label balance (1d up): 51.0%
+2026-03-30 14:44:01,125 | INFO     | src.features.chart_generator | Generating 100 chart images for BTC-USD...
+2026-03-30 14:44:01,285 | INFO     | src.features.chart_generator |   ✓ 0 images saved → data\charts\BTC_USD
+2026-03-30 14:44:01,285 | INFO     | src.features.chart_generator |   Metadata → BTC_USD_metadata.csv
+2026-03-30 14:44:01,286 | INFO     | src.features.chart_generator |   Label balance (1d up): 62.0%
+2026-03-30 14:44:01,291 | INFO     | src.features.chart_generator | Generating 100 chart images for ETH-USD...
+2026-03-30 14:44:01,469 | INFO     | src.features.chart_generator |   ✓ 0 images saved → data\charts\ETH_USD
+2026-03-30 14:44:01,471 | INFO     | src.features.chart_generator |   Metadata → ETH_USD_metadata.csv
+2026-03-30 14:44:01,472 | INFO     | src.features.chart_generator |   Label balance (1d up): 54.0%
+2026-03-30 14:44:01,473 | INFO     | phase1 | Phase 1 complete!
+2026-03-30 16:15:54,131 | INFO     | phase1 | =======================================================
+2026-03-30 16:15:54,133 | INFO     | phase1 | PHASE 1 — Data Pipeline & Feature Engineering
+2026-03-30 16:15:54,133 | INFO     | phase1 | =======================================================
+2026-03-30 16:15:54,133 | INFO     | phase1 | Step 1/5 — Downloading OHLCV price data...
+2026-03-30 16:15:54,134 | INFO     | src.ingestion.downloader | Downloading EUR/USD (EURUSD=X)  [forex]
+2026-03-30 16:16:24,207 | INFO     | src.ingestion.downloader |   ✓ EUR/USD: 1,564 daily | 17,241 hourly rows
+2026-03-30 16:16:24,708 | INFO     | src.ingestion.downloader | Downloading USD/KES (KES=X)  [forex]
+2026-03-30 16:16:27,663 | INFO     | src.ingestion.downloader |   ✓ USD/KES: 1,564 daily | 7,441 hourly rows
+2026-03-30 16:16:28,165 | INFO     | src.ingestion.downloader | Downloading Bitcoin (BTC-USD)  [crypto]
+2026-03-30 16:16:32,562 | INFO     | src.ingestion.downloader |   ✓ Bitcoin: 2,191 daily | 17,330 hourly rows
+2026-03-30 16:16:33,063 | INFO     | src.ingestion.downloader | Downloading Ethereum (ETH-USD)  [crypto]
+2026-03-30 16:16:37,320 | INFO     | src.ingestion.downloader |   ✓ Ethereum: 2,191 daily | 17,330 hourly rows
+2026-03-30 16:16:37,822 | INFO     | src.ingestion.downloader | Downloading Gold (GC=F)  [gold]
+2026-03-30 16:16:41,625 | INFO     | src.ingestion.downloader |   ✓ Gold: 1,509 daily | 13,706 hourly rows
+2026-03-30 16:16:42,127 | INFO     | src.ingestion.downloader | Download complete — 5/5 assets
+2026-03-30 16:16:42,128 | INFO     | phase1 | Step 2/5 — Fetching news headlines...
+2026-03-30 16:16:42,130 | INFO     | src.ingestion.news_fetcher | Fetching news for EURUSD=X...
+2026-03-30 16:17:00,731 | INFO     | src.ingestion.news_fetcher | Fetching news for KES=X...
+2026-03-30 16:17:08,812 | INFO     | src.ingestion.news_fetcher | Fetching news for BTC-USD...
+2026-03-30 16:17:29,642 | WARNING  | src.ingestion.news_fetcher | NewsAPI timeout for 'Bitcoin price' — retrying...
+2026-03-30 16:17:50,594 | INFO     | src.ingestion.news_fetcher | Fetching news for ETH-USD...
+2026-03-30 16:18:11,790 | INFO     | src.ingestion.news_fetcher | Fetching news for GC=F...
+2026-03-30 16:18:44,372 | INFO     | src.ingestion.news_fetcher | Saved 344 news articles → data\raw\news\headlines.csv
+2026-03-30 16:18:44,372 | INFO     | phase1 | Step 3/5 — Fetching macro indicators from FRED...
+2026-03-30 16:18:44,373 | INFO     | src.ingestion.news_fetcher | Fetching FRED: CPIAUCSL (US CPI (inflation))
+2026-03-30 16:18:45,827 | INFO     | src.ingestion.news_fetcher |   ✓ 72 observations
+2026-03-30 16:18:46,129 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DFF (Fed Funds Rate (daily))
+2026-03-30 16:18:47,279 | INFO     | src.ingestion.news_fetcher |   ✓ 2,192 observations
+2026-03-30 16:18:47,581 | INFO     | src.ingestion.news_fetcher | Fetching FRED: T10Y2Y (10Y-2Y Treasury spread)
+2026-03-30 16:18:48,796 | INFO     | src.ingestion.news_fetcher |   ✓ 1,501 observations
+2026-03-30 16:18:49,098 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DEXUSEU (USD/EUR Exchange Rate)
+2026-03-30 16:18:50,322 | INFO     | src.ingestion.news_fetcher |   ✓ 1,498 observations
+2026-03-30 16:18:50,623 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DEXCHUS (USD/CNY Exchange Rate)
+2026-03-30 16:18:51,749 | INFO     | src.ingestion.news_fetcher |   ✓ 1,498 observations
+2026-03-30 16:18:52,051 | INFO     | src.ingestion.news_fetcher | Fetching FRED: GOLDAMGBD228NLBM (Gold Price London Fix)
+2026-03-30 16:18:53,270 | WARNING  | src.ingestion.news_fetcher |   FRED HTTP error for GOLDAMGBD228NLBM: 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=GOLDAMGBD228NLBM&api_key=ff68a45463cb4d6e97b4788cdf544bda&file_type=json&observation_start=2019-01-01&observation_end=2024-12-31
+2026-03-30 16:18:53,274 | WARNING  | src.ingestion.news_fetcher |   ✗ No data for GOLDAMGBD228NLBM — skipping
+2026-03-30 16:18:53,636 | INFO     | src.ingestion.news_fetcher | Saved macro data (2192, 5) → macro_fred.parquet
+2026-03-30 16:18:53,637 | INFO     | phase1 | Step 4/5 — Computing technical indicators...
+2026-03-30 16:18:53,639 | INFO     | src.features.indicators | Computing features for EURUSD=X (1,564 rows)  [volume=no — forex]
+2026-03-30 16:18:58,355 | INFO     | src.features.indicators |   ✓ 1,515 clean rows (49 dropped for indicator warm-up)
+2026-03-30 16:18:58,381 | INFO     | src.features.indicators |   Saved → EURUSD_X_features.parquet  (29 features)
+2026-03-30 16:18:58,388 | INFO     | src.features.indicators | Computing features for KES=X (1,564 rows)  [volume=no — forex]
+2026-03-30 16:18:58,442 | INFO     | src.features.indicators |   ✓ 1,515 clean rows (49 dropped for indicator warm-up)
+2026-03-30 16:18:58,462 | INFO     | src.features.indicators |   Saved → KES_X_features.parquet  (29 features)
+2026-03-30 16:18:58,463 | INFO     | src.features.indicators | Computing features for BTC-USD (2,191 rows)  [volume=yes]
+2026-03-30 16:18:58,597 | INFO     | src.features.indicators |   ✓ 2,142 clean rows (49 dropped for indicator warm-up)
+2026-03-30 16:18:58,636 | INFO     | src.features.indicators |   Saved → BTC_USD_features.parquet  (29 features)
+2026-03-30 16:18:58,637 | INFO     | src.features.indicators | Computing features for ETH-USD (2,191 rows)  [volume=yes]
+2026-03-30 16:18:58,693 | INFO     | src.features.indicators |   ✓ 2,142 clean rows (49 dropped for indicator warm-up)
+2026-03-30 16:18:58,726 | INFO     | src.features.indicators |   Saved → ETH_USD_features.parquet  (29 features)
+2026-03-30 16:18:58,727 | INFO     | src.features.indicators | Computing features for GC=F (1,509 rows)  [volume=yes]
+2026-03-30 16:18:58,786 | INFO     | src.features.indicators |   ✓ 1,460 clean rows (49 dropped for indicator warm-up)
+2026-03-30 16:18:58,812 | INFO     | src.features.indicators |   Saved → GC_F_features.parquet  (29 features)
+2026-03-30 16:18:58,813 | INFO     | src.features.indicators | Feature engineering complete — 5/5 assets
+2026-03-30 16:18:58,813 | INFO     | phase1 | Step 5/5 — Generating candlestick chart images...
+2026-03-30 16:18:58,822 | INFO     | src.features.chart_generator | Generating 1,490 chart images for EURUSD=X...
+2026-03-30 16:20:22,593 | INFO     | src.features.chart_generator |   ✓ 1,490 images saved → data\charts\EURUSD_X
+2026-03-30 16:20:22,594 | INFO     | src.features.chart_generator |   Metadata → EURUSD_X_metadata.csv  (1,490 records)
+2026-03-30 16:20:22,595 | INFO     | src.features.chart_generator |   Label balance (1d up): 49.3%
+2026-03-30 16:20:22,602 | INFO     | src.features.chart_generator | Generating 1,490 chart images for KES=X...
+2026-03-30 16:21:43,523 | INFO     | src.features.chart_generator |   ✓ 1,490 images saved → data\charts\KES_X
+2026-03-30 16:21:43,524 | INFO     | src.features.chart_generator |   Metadata → KES_X_metadata.csv  (1,490 records)
+2026-03-30 16:21:43,524 | INFO     | src.features.chart_generator |   Label balance (1d up): 54.7%
+2026-03-30 16:21:43,532 | INFO     | src.features.chart_generator | Generating 2,117 chart images for BTC-USD...
+2026-03-30 16:23:45,112 | INFO     | src.features.chart_generator |   ✓ 2,117 images saved → data\charts\BTC_USD
+2026-03-30 16:23:45,112 | INFO     | src.features.chart_generator |   Metadata → BTC_USD_metadata.csv  (2,117 records)
+2026-03-30 16:23:45,113 | INFO     | src.features.chart_generator |   Label balance (1d up): 51.3%
+2026-03-30 16:23:45,119 | INFO     | src.features.chart_generator | Generating 2,117 chart images for ETH-USD...
+2026-03-30 16:25:40,383 | INFO     | src.features.chart_generator |   ✓ 2,117 images saved → data\charts\ETH_USD
+2026-03-30 16:25:40,384 | INFO     | src.features.chart_generator |   Metadata → ETH_USD_metadata.csv  (2,117 records)
+2026-03-30 16:25:40,384 | INFO     | src.features.chart_generator |   Label balance (1d up): 52.0%
+2026-03-30 16:25:40,390 | INFO     | src.features.chart_generator | Generating 1,435 chart images for GC=F...
+2026-03-30 16:26:58,926 | INFO     | src.features.chart_generator |   ✓ 1,435 images saved → data\charts\GC_F
+2026-03-30 16:26:58,927 | INFO     | src.features.chart_generator |   Metadata → GC_F_metadata.csv  (1,435 records)
+2026-03-30 16:26:58,928 | INFO     | src.features.chart_generator |   Label balance (1d up): 54.7%
+2026-03-30 16:26:58,929 | INFO     | phase1 | Phase 1 complete!
+2026-03-30 16:28:30,951 | INFO     | phase1 | =======================================================
+2026-03-30 16:28:30,952 | INFO     | phase1 | PHASE 1 — Data Pipeline & Feature Engineering
+2026-03-30 16:28:30,952 | INFO     | phase1 | =======================================================
+2026-03-30 16:28:30,953 | INFO     | phase1 | Step 1/5 — Downloading OHLCV price data...
+2026-03-30 16:28:30,953 | INFO     | src.ingestion.downloader | Downloading EUR/USD (EURUSD=X)  [forex]
+2026-03-30 16:28:41,835 | INFO     | src.ingestion.downloader |   ✓ EUR/USD: 1,564 daily | 17,241 hourly rows
+2026-03-30 16:28:42,337 | INFO     | src.ingestion.downloader | Downloading USD/KES (KES=X)  [forex]
+2026-03-30 16:28:46,471 | INFO     | src.ingestion.downloader |   ✓ USD/KES: 1,564 daily | 7,442 hourly rows
+2026-03-30 16:28:46,972 | INFO     | src.ingestion.downloader | Downloading Bitcoin (BTC-USD)  [crypto]
+2026-03-30 16:28:56,803 | INFO     | src.ingestion.downloader |   ✓ Bitcoin: 2,191 daily | 17,330 hourly rows
+2026-03-30 16:28:57,304 | INFO     | src.ingestion.downloader | Downloading Ethereum (ETH-USD)  [crypto]
+2026-03-30 16:29:17,390 | WARNING  | src.ingestion.downloader |   Attempt 1 failed for ETH-USD (daily): 'NoneType' object is not subscriptable — retrying in 2s
+2026-03-30 16:29:39,445 | WARNING  | src.ingestion.downloader |   Attempt 2 failed for ETH-USD (daily): 'NoneType' object is not subscriptable — retrying in 4s
+2026-03-30 16:30:20,415 | WARNING  | src.ingestion.downloader |   Attempt 1 failed for ETH-USD (hourly): 'NoneType' object is not subscriptable — retrying in 2s
+2026-03-30 16:30:42,466 | WARNING  | src.ingestion.downloader |   Attempt 2 failed for ETH-USD (hourly): 'NoneType' object is not subscriptable — retrying in 4s
+2026-03-30 16:31:06,508 | ERROR    | src.ingestion.downloader |   All 3 attempts failed for ETH-USD (hourly): 'NoneType' object is not subscriptable
+2026-03-30 16:31:06,545 | INFO     | src.ingestion.downloader |   ✓ Ethereum: 2,191 daily | 0 hourly rows
+2026-03-30 16:31:07,047 | INFO     | src.ingestion.downloader | Downloading Gold (GC=F)  [gold]
+2026-03-30 16:31:11,785 | INFO     | src.ingestion.downloader |   ✓ Gold: 1,509 daily | 13,706 hourly rows
+2026-03-30 16:31:12,286 | INFO     | src.ingestion.downloader | Download complete — 5/5 assets
+2026-03-30 16:31:12,287 | INFO     | phase1 | Step 2/5 — Fetching news headlines...
+2026-03-30 16:31:12,289 | INFO     | src.ingestion.news_fetcher | Fetching news for EURUSD=X...
+2026-03-30 16:31:28,509 | INFO     | src.ingestion.news_fetcher | Fetching news for KES=X...
+2026-03-30 16:31:38,518 | INFO     | src.ingestion.news_fetcher | Fetching news for BTC-USD...
+2026-03-30 16:31:57,264 | INFO     | src.ingestion.news_fetcher | Fetching news for ETH-USD...
+2026-03-30 16:32:38,490 | INFO     | src.ingestion.news_fetcher | Fetching news for GC=F...
+2026-03-30 16:33:02,637 | INFO     | src.ingestion.news_fetcher | Saved 344 news articles → data\raw\news\headlines.csv
+2026-03-30 16:33:02,638 | INFO     | phase1 | Step 3/5 — Fetching macro indicators from FRED...
+2026-03-30 16:33:02,638 | INFO     | src.ingestion.news_fetcher | Fetching FRED: CPIAUCSL (US CPI (inflation))
+2026-03-30 16:33:05,575 | INFO     | src.ingestion.news_fetcher |   ✓ 72 observations
+2026-03-30 16:33:05,877 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DFF (Fed Funds Rate (daily))
+2026-03-30 16:33:08,402 | INFO     | src.ingestion.news_fetcher |   ✓ 2,192 observations
+2026-03-30 16:33:08,703 | INFO     | src.ingestion.news_fetcher | Fetching FRED: T10Y2Y (10Y-2Y Treasury spread)
+2026-03-30 16:33:17,941 | INFO     | src.ingestion.news_fetcher |   ✓ 1,501 observations
+2026-03-30 16:33:18,242 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DEXUSEU (USD/EUR Exchange Rate)
+2026-03-30 16:33:34,088 | WARNING  | src.ingestion.news_fetcher |   FRED error for DEXUSEU: HTTPSConnectionPool(host='api.stlouisfed.org', port=443): Read timed out. (read timeout=15)
+2026-03-30 16:33:34,090 | WARNING  | src.ingestion.news_fetcher |   ✗ No data for DEXUSEU — skipping
+2026-03-30 16:33:34,392 | INFO     | src.ingestion.news_fetcher | Fetching FRED: DEXCHUS (USD/CNY Exchange Rate)
+2026-03-30 16:33:36,103 | INFO     | src.ingestion.news_fetcher |   ✓ 1,498 observations
+2026-03-30 16:33:36,405 | INFO     | src.ingestion.news_fetcher | Fetching FRED: GOLDAMGBD228NLBM (Gold Price London Fix)
+2026-03-30 16:33:37,606 | WARNING  | src.ingestion.news_fetcher |   FRED HTTP error for GOLDAMGBD228NLBM: 400 Client Error: Bad Request for url: https://api.stlouisfed.org/fred/series/observations?series_id=GOLDAMGBD228NLBM&api_key=ff68a45463cb4d6e97b4788cdf544bda&file_type=json&observation_start=2019-01-01&observation_end=2024-12-31
+2026-03-30 16:33:37,611 | WARNING  | src.ingestion.news_fetcher |   ✗ No data for GOLDAMGBD228NLBM — skipping
+2026-03-30 16:33:37,947 | INFO     | src.ingestion.news_fetcher | Saved macro data (2192, 4) → macro_fred.parquet
+2026-03-30 16:33:37,948 | INFO     | phase1 | Step 4/5 — Computing technical indicators...
+2026-03-30 16:33:37,951 | INFO     | src.features.indicators | Computing features for EURUSD=X (1,564 rows)  [volume=no — forex]
+2026-03-30 16:33:38,652 | INFO     | src.features.indicators |   ✓ 1,515 clean rows (49 dropped for indicator warm-up)
+2026-03-30 16:33:38,680 | INFO     | src.features.indicators |   Saved → EURUSD_X_features.parquet  (29 features)
+2026-03-30 16:33:38,681 | INFO     | src.features.indicators | Computing features for KES=X (1,564 rows)  [volume=no — forex]
+2026-03-30 16:33:38,739 | INFO     | src.features.indicators |   ✓ 1,515 clean rows (49 dropped for indicator warm-up)
+2026-03-30 16:33:38,757 | INFO     | src.features.indicators |   Saved → KES_X_features.parquet  (29 features)
+2026-03-30 16:33:38,760 | INFO     | src.features.indicators | Computing features for BTC-USD (2,191 rows)  [volume=yes]
+2026-03-30 16:33:38,849 | INFO     | src.features.indicators |   ✓ 2,142 clean rows (49 dropped for indicator warm-up)
+2026-03-30 16:33:38,877 | INFO     | src.features.indicators |   Saved → BTC_USD_features.parquet  (29 features)
+2026-03-30 16:33:38,879 | INFO     | src.features.indicators | Computing features for ETH-USD (2,191 rows)  [volume=yes]
+2026-03-30 16:33:38,938 | INFO     | src.features.indicators |   ✓ 2,142 clean rows (49 dropped for indicator warm-up)
+2026-03-30 16:33:38,956 | INFO     | src.features.indicators |   Saved → ETH_USD_features.parquet  (29 features)
+2026-03-30 16:33:38,957 | INFO     | src.features.indicators | Computing features for GC=F (1,509 rows)  [volume=yes]
+2026-03-30 16:33:39,013 | INFO     | src.features.indicators |   ✓ 1,460 clean rows (49 dropped for indicator warm-up)
+2026-03-30 16:33:39,033 | INFO     | src.features.indicators |   Saved → GC_F_features.parquet  (29 features)
+2026-03-30 16:33:39,033 | INFO     | src.features.indicators | Feature engineering complete — 5/5 assets
+2026-03-30 16:33:39,034 | INFO     | phase1 | Step 5/5 — Generating candlestick chart images...
+2026-03-30 16:33:39,044 | INFO     | src.features.chart_generator | Generating 100 chart images for EURUSD=X...
+2026-03-30 16:33:39,124 | INFO     | src.features.chart_generator |   ✓ 0 images saved → data\charts\EURUSD_X
+2026-03-30 16:33:39,124 | INFO     | src.features.chart_generator |   Metadata → EURUSD_X_metadata.csv  (100 records)
+2026-03-30 16:33:39,125 | INFO     | src.features.chart_generator |   Label balance (1d up): 46.0%
+2026-03-30 16:33:39,129 | INFO     | src.features.chart_generator | Generating 100 chart images for KES=X...
+2026-03-30 16:33:39,208 | INFO     | src.features.chart_generator |   ✓ 0 images saved → data\charts\KES_X
+2026-03-30 16:33:39,209 | INFO     | src.features.chart_generator |   Metadata → KES_X_metadata.csv  (100 records)
+2026-03-30 16:33:39,209 | INFO     | src.features.chart_generator |   Label balance (1d up): 51.0%
+2026-03-30 16:33:39,214 | INFO     | src.features.chart_generator | Generating 100 chart images for BTC-USD...
+2026-03-30 16:33:39,300 | INFO     | src.features.chart_generator |   ✓ 0 images saved → data\charts\BTC_USD
+2026-03-30 16:33:39,300 | INFO     | src.features.chart_generator |   Metadata → BTC_USD_metadata.csv  (100 records)
+2026-03-30 16:33:39,301 | INFO     | src.features.chart_generator |   Label balance (1d up): 62.0%
+2026-03-30 16:33:39,305 | INFO     | src.features.chart_generator | Generating 100 chart images for ETH-USD...
+2026-03-30 16:33:39,385 | INFO     | src.features.chart_generator |   ✓ 0 images saved → data\charts\ETH_USD
+2026-03-30 16:33:39,386 | INFO     | src.features.chart_generator |   Metadata → ETH_USD_metadata.csv  (100 records)
+2026-03-30 16:33:39,387 | INFO     | src.features.chart_generator |   Label balance (1d up): 54.0%
+2026-03-30 16:33:39,391 | INFO     | src.features.chart_generator | Generating 100 chart images for GC=F...
+2026-03-30 16:33:39,473 | INFO     | src.features.chart_generator |   ✓ 0 images saved → data\charts\GC_F
+2026-03-30 16:33:39,474 | INFO     | src.features.chart_generator |   Metadata → GC_F_metadata.csv  (100 records)
+2026-03-30 16:33:39,474 | INFO     | src.features.chart_generator |   Label balance (1d up): 59.0%
+2026-03-30 16:33:39,475 | INFO     | phase1 | Phase 1 complete!
