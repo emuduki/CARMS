@@ -25,10 +25,10 @@ from src.utils.logger import get_logger
 log = get_logger(__name__)
 
 REGIME_COLOURS = {
-    "trending_up":   "#1D9E75",
-    "trending_down": "#E24B4A",
-    "ranging":       "#888780",
-    "crisis":        "#D85A30",
+    "trending_up":   "#00e676",  # Neon Green
+    "trending_down": "#ff3860",  # Neon Red
+    "ranging":       "#7b8a97",  # Steel Blue/Grey
+    "crisis":        "#ff9f43",  # Amber/Orange
 }
 
 
@@ -42,43 +42,94 @@ def run_dashboard(save_dir: str = "models", port: int = 8050):
         return
 
     save_path = Path(save_dir)
-    app = dash.Dash(__name__, title="CARMS Dashboard")
+    
+    external_stylesheets = [
+        "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+    ]
+    app = dash.Dash(__name__, title="CARMS Terminal", external_stylesheets=external_stylesheets)
 
     app.layout = html.Div([
-        html.Div([
-            html.H2("CARMS — Cross-Asset Regime-Aware Trading System",
-                    style={"color": "#1a1a2e", "margin": "0"}),
-            html.P("Paper Trading Dashboard | Updates every 10s",
-                   style={"color": "#888", "margin": "4px 0 0"}),
-        ], style={"padding": "20px 30px 10px", "borderBottom": "1px solid #eee",
-                  "background": "#fff"}),
+        # HTML custom style injection for animation and styling overrides
+        html.Style("""
+            @keyframes blink {
+                0% { opacity: 0.25; }
+                50% { opacity: 1; }
+                100% { opacity: 0.25; }
+            }
+            .trading-card {
+                background: #111625;
+                border: 1px solid #1f293d;
+                border-radius: 6px;
+                padding: 16px 20px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+                transition: all 0.3s ease;
+            }
+            .trading-card:hover {
+                border-color: #3b82f6;
+                box-shadow: 0 6px 12px rgba(59,130,246,0.15);
+            }
+            .trade-row {
+                transition: background-color 0.2s ease;
+            }
+            .trade-row:hover {
+                background-color: #1a2238 !important;
+            }
+        """),
 
-        html.Div(id="metrics-row", style={
-            "display": "flex", "gap": "16px", "padding": "16px 30px",
-            "flexWrap": "wrap", "background": "#fafafa",
+        # Header
+        html.Div([
+            html.Div([
+                html.H2("CARMS // REGIME-AWARE TERMINAL",
+                        style={"color": "#ffffff", "margin": "0", "fontFamily": "'Outfit', sans-serif", "fontWeight": "700", "letterSpacing": "1px"}),
+                html.Div([
+                    html.Span("●", style={"color": "#00e676", "marginRight": "6px", "animation": "blink 1.5s infinite"}),
+                    html.Span("LIVE FEED ACTIVE | UPDATING EVERY 10S", style={"color": "#8892b0", "fontSize": "11px", "fontFamily": "'JetBrains Mono', monospace", "letterSpacing": "0.5px"}),
+                ], style={"display": "flex", "alignItems": "center", "marginTop": "4px"}),
+            ]),
+            html.Div([
+                html.Div("STAGING PAPER-TRADING", style={
+                    "border": "1px solid #ff9f43", "color": "#ff9f43", "padding": "4px 10px",
+                    "borderRadius": "4px", "fontSize": "11px", "fontFamily": "'JetBrains Mono', monospace", "fontWeight": "bold", "letterSpacing": "1px"
+                })
+            ])
+        ], style={
+            "padding": "20px 30px", "borderBottom": "1px solid #1f293d",
+            "background": "#0b0e1a", "display": "flex", "justifyContent": "space-between", "alignItems": "center"
         }),
 
+        # Metrics Row
+        html.Div(id="metrics-row", style={
+            "display": "flex", "gap": "16px", "padding": "24px 30px 16px",
+            "flexWrap": "wrap", "background": "#080b11",
+        }),
+
+        # Charts Section Row 1
         html.Div([
-            html.Div([dcc.Graph(id="equity-curve",    style={"height": "320px"})],
-                     style={"flex": "2", "minWidth": "420px"}),
-            html.Div([dcc.Graph(id="regime-bar",      style={"height": "320px"})],
-                     style={"flex": "1", "minWidth": "260px"}),
+            html.Div([dcc.Graph(id="equity-curve",    style={"height": "340px"})],
+                     style={"flex": "2", "minWidth": "420px", "background": "#111625", "border": "1px solid #1f293d", "borderRadius": "6px", "padding": "10px"}),
+            html.Div([dcc.Graph(id="regime-bar",      style={"height": "340px"})],
+                     style={"flex": "1", "minWidth": "280px", "background": "#111625", "border": "1px solid #1f293d", "borderRadius": "6px", "padding": "10px"}),
         ], style={"display": "flex", "gap": "16px", "padding": "0 30px", "marginTop": "8px"}),
 
+        # Charts Section Row 2
         html.Div([
-            html.Div([dcc.Graph(id="positions-chart", style={"height": "280px"})],
-                     style={"flex": "1", "minWidth": "300px"}),
-            html.Div([dcc.Graph(id="regime-pie",      style={"height": "280px"})],
-                     style={"flex": "1", "minWidth": "300px"}),
+            html.Div([dcc.Graph(id="positions-chart", style={"height": "300px"})],
+                     style={"flex": "1", "minWidth": "300px", "background": "#111625", "border": "1px solid #1f293d", "borderRadius": "6px", "padding": "10px"}),
+            html.Div([dcc.Graph(id="regime-pie",      style={"height": "300px"})],
+                     style={"flex": "1", "minWidth": "300px", "background": "#111625", "border": "1px solid #1f293d", "borderRadius": "6px", "padding": "10px"}),
         ], style={"display": "flex", "gap": "16px", "padding": "0 30px", "marginTop": "16px"}),
 
+        # Trade Log Table
         html.Div([
-            html.H4("Recent Trades", style={"color": "#444", "marginBottom": "8px"}),
+            html.H4("TRANSACTION & ORDER ACTIVITY LOG", style={
+                "color": "#ffffff", "fontFamily": "'Outfit', sans-serif", 
+                "marginBottom": "12px", "letterSpacing": "1px", "fontSize": "13px", "fontWeight": "600"
+            }),
             html.Div(id="trade-table"),
-        ], style={"padding": "16px 30px"}),
+        ], style={"padding": "24px 30px 40px"}),
 
         dcc.Interval(id="interval", interval=10_000, n_intervals=0),
-    ], style={"fontFamily": "system-ui, sans-serif", "background": "#fafafa", "minHeight": "100vh"})
+    ], style={"fontFamily": "'Outfit', sans-serif", "background": "#080b11", "minHeight": "100vh", "color": "#ffffff"})
 
     @app.callback(
         Output("metrics-row",    "children"),
@@ -138,20 +189,22 @@ def _metrics_row(state: dict) -> list:
     n_tr = state.get("n_trades", 0)
     halt = state.get("halted", False)
 
-    def card(title, value, colour="#1a1a2e"):
+    def card(title, value, colour="#ffffff", subtext=None, subtext_color="#8892b0"):
         return html.Div([
-            html.P(title, style={"margin":"0","fontSize":"12px","color":"#888"}),
-            html.H3(value, style={"margin":"4px 0 0","color":colour,"fontSize":"22px"}),
-        ], style={"background":"#fff","borderRadius":"10px","padding":"14px 20px",
-                  "boxShadow":"0 1px 4px rgba(0,0,0,.07)","minWidth":"140px"})
+            html.P(title, style={"margin":"0","fontSize":"11px","color":"#8892b0","fontWeight":"600","textTransform":"uppercase","letterSpacing":"1px","fontFamily":"'Outfit', sans-serif"}),
+            html.H3(value, style={"margin":"8px 0 2px","color":colour,"fontSize":"26px","fontWeight":"700","fontFamily":"'JetBrains Mono', monospace"}),
+            html.P(subtext, style={"margin":"0","fontSize":"11px","color":subtext_color,"fontFamily":"'Outfit', sans-serif"}) if subtext else None
+        ], className="trading-card", style={"flex":"1","minWidth":"160px"})
+
+    status_color = "#ff3860" if halt else "#00e676"
+    status_text = "HALTED" if halt else "ACTIVE"
 
     return [
-        card("Portfolio",    f"${val:,.2f}"),
-        card("Return",       f"{ret:+.2f}%", "#1D9E75" if ret>=0 else "#E24B4A"),
-        card("Drawdown",     f"{dd:.1f}%",   "#E24B4A" if dd>10 else "#888"),
-        card("Trades",       str(n_tr)),
-        card("Status",       "⚠ HALTED" if halt else "● ACTIVE",
-             "#E24B4A" if halt else "#1D9E75"),
+        card("Portfolio Value", f"${val:,.2f}", "#ffffff", "Initial: $10,000.00"),
+        card("Total Return", f"{ret:+.2f}%", "#00e676" if ret>=0 else "#ff3860", "Net profit/loss"),
+        card("Max Drawdown", f"{dd:.2f}%", "#ff3860" if dd>5 else "#8892b0", "Peak-to-trough risk"),
+        card("Executed Trades", str(n_tr), "#3b82f6", f"{n_tr} operations total"),
+        card("System Status", status_text, status_color, "Auto-safety check"),
     ]
 
 
@@ -161,15 +214,40 @@ def _equity_fig(sim: Optional[pd.DataFrame]):
     if sim is not None and "portfolio_value" in sim.columns:
         x = sim["date"] if "date" in sim.columns else sim.index
         fig.add_trace(go.Scatter(
-            x=x, y=sim["portfolio_value"], name="Portfolio",
-            line=dict(color="#534AB7", width=2),
-            fill="tozeroy", fillcolor="rgba(83,74,183,0.07)",
+            x=x, y=sim["portfolio_value"], name="Portfolio Value",
+            line=dict(color="#3b82f6", width=2.5),
+            fill="tozeroy", 
+            fillcolor="rgba(59,130,246,0.06)",
+            hoverinfo="x+y"
         ))
-        fig.add_hline(y=10_000, line_dash="dot", line_color="#ccc",
-                      annotation_text="Initial $10,000")
-    fig.update_layout(title="Portfolio Equity Curve", xaxis_title="Date",
-                      yaxis_title="Value ($)", paper_bgcolor="white",
-                      plot_bgcolor="#f8f9fa", margin=dict(l=40,r=20,t=40,b=40))
+        fig.add_hline(y=10_000, line_dash="dash", line_color="#8892b0", line_width=1,
+                      annotation_text="Initial Capital ($10,000)", annotation_position="bottom left",
+                      annotation_font=dict(color="#8892b0", size=10, family="JetBrains Mono"))
+    
+    fig.update_layout(
+        title=dict(
+            text="PORTFOLIO EQUITY CURVE",
+            font=dict(size=14, color="#ffffff", family="Outfit"),
+            x=0, y=0.95
+        ),
+        xaxis=dict(
+            gridcolor="#1f293d", 
+            linecolor="#1f293d", 
+            tickfont=dict(color="#8892b0", family="JetBrains Mono", size=10),
+            title=dict(text="Timeline", font=dict(color="#8892b0", family="Outfit", size=11))
+        ),
+        yaxis=dict(
+            gridcolor="#1f293d", 
+            linecolor="#1f293d", 
+            tickfont=dict(color="#8892b0", family="JetBrains Mono", size=10),
+            title=dict(text="Value ($)", font=dict(color="#8892b0", family="Outfit", size=11))
+        ),
+        paper_bgcolor="#111625",
+        plot_bgcolor="#111625",
+        margin=dict(l=50, r=20, t=50, b=40),
+        template="plotly_dark",
+        hovermode="x unified"
+    )
     return fig
 
 
@@ -180,18 +258,41 @@ def _regime_bar(sim: Optional[pd.DataFrame]):
     if sim is not None and "regime" in sim.columns:
         counts = sim["regime"].value_counts(normalize=True)
         probs  = [float(counts.get(n, 0)) for n in names]
+    
+    clean_names = [n.replace("_"," ").upper() for n in names]
     fig = go.Figure(go.Bar(
-        x=[n.replace("_"," ").title() for n in names],
+        x=clean_names,
         y=probs,
-        marker_color=list(REGIME_COLOURS.values()),
-        text=[f"{p:.0%}" for p in probs], textposition="outside",
+        marker=dict(
+            color=list(REGIME_COLOURS.values()),
+            line=dict(color="#111625", width=1.5)
+        ),
+        text=[f"{p:.1%}" for p in probs], textposition="outside",
+        textfont=dict(color="#ffffff", family="JetBrains Mono", size=11)
     ))
-    latest_regime = sim["regime"].iloc[-1] if sim is not None and "regime" in sim.columns else "?"
+    latest_regime = sim["regime"].iloc[-1] if (sim is not None and len(sim) > 0 and "regime" in sim.columns) else "?"
+    latest_regime_str = latest_regime.replace('_',' ').upper()
+    
     fig.update_layout(
-        title=f"Regime Frequency  (latest: {latest_regime.replace('_',' ').title()})",
-        yaxis=dict(range=[0,1.1], tickformat=".0%"),
-        paper_bgcolor="white", plot_bgcolor="#f8f9fa",
-        margin=dict(l=40,r=20,t=40,b=40),
+        title=dict(
+            text=f"REGIME FREQUENCY (CURRENT: {latest_regime_str})",
+            font=dict(size=14, color="#ffffff", family="Outfit"),
+            x=0, y=0.95
+        ),
+        xaxis=dict(
+            linecolor="#1f293d", 
+            tickfont=dict(color="#8892b0", family="Outfit", size=11)
+        ),
+        yaxis=dict(
+            gridcolor="#1f293d", 
+            linecolor="#1f293d", 
+            tickfont=dict(color="#8892b0", family="JetBrains Mono", size=10),
+            range=[0, max(probs) * 1.25 if max(probs) > 0 else 1.1]
+        ),
+        paper_bgcolor="#111625",
+        plot_bgcolor="#111625",
+        margin=dict(l=40, r=20, t=50, b=40),
+        template="plotly_dark"
     )
     return fig
 
@@ -199,70 +300,141 @@ def _regime_bar(sim: Optional[pd.DataFrame]):
 def _positions_fig(state: dict):
     import plotly.graph_objects as go
     positions = state.get("positions", {})
-    if not positions:
+    if not positions or all(q == 0 for q in positions.values()):
         fig = go.Figure()
-        fig.add_annotation(text="No open positions", x=0.5, y=0.5,
-                           xref="paper", yref="paper", showarrow=False)
+        fig.add_annotation(
+            text="NO ACTIVE OPEN POSITIONS", 
+            x=0.5, y=0.5,
+            xref="paper", yref="paper", 
+            showarrow=False,
+            font=dict(color="#8892b0", size=12, family="JetBrains Mono")
+        )
     else:
         syms = list(positions.keys())
         qtys = [positions[s] for s in syms]
         fig = go.Figure(go.Bar(
             x=syms, y=qtys,
-            marker_color=["#1D9E75" if q>0 else "#E24B4A" for q in qtys],
+            marker_color=["#00e676" if q>0 else "#ff3860" for q in qtys],
             text=[f"{q:+.4f}" for q in qtys], textposition="outside",
+            textfont=dict(color="#ffffff", family="JetBrains Mono", size=10)
         ))
-    fig.update_layout(title="Open Positions", yaxis_title="Quantity",
-                      paper_bgcolor="white", plot_bgcolor="#f8f9fa",
-                      margin=dict(l=40,r=20,t=40,b=40))
+    fig.update_layout(
+        title=dict(
+            text="OPEN POSITIONS EXPOSURE",
+            font=dict(size=14, color="#ffffff", family="Outfit"),
+            x=0, y=0.95
+        ),
+        xaxis=dict(
+            linecolor="#1f293d", 
+            tickfont=dict(color="#8892b0", family="Outfit", size=11)
+        ),
+        yaxis=dict(
+            gridcolor="#1f293d", 
+            linecolor="#1f293d", 
+            tickfont=dict(color="#8892b0", family="JetBrains Mono", size=10),
+            title=dict(text="Units", font=dict(color="#8892b0", family="Outfit", size=11))
+        ),
+        paper_bgcolor="#111625",
+        plot_bgcolor="#111625",
+        margin=dict(l=50, r=20, t=50, b=40),
+        template="plotly_dark"
+    )
     return fig
 
 
 def _regime_pie(sim: Optional[pd.DataFrame]):
     import plotly.graph_objects as go
-    if sim is None or "regime" not in sim.columns:
+    if sim is None or "regime" not in sim.columns or sim.empty:
         fig = go.Figure()
-        fig.add_annotation(text="Run simulation first", x=0.5, y=0.5,
-                           xref="paper", yref="paper", showarrow=False)
-        fig.update_layout(title="Regime Distribution", paper_bgcolor="white",
-                          margin=dict(l=20,r=20,t=40,b=20))
+        fig.add_annotation(
+            text="AWAITING SIMULATION DATA", 
+            x=0.5, y=0.5,
+            xref="paper", yref="paper", 
+            showarrow=False,
+            font=dict(color="#8892b0", size=12, family="JetBrains Mono")
+        )
+        fig.update_layout(
+            title=dict(
+                text="REGIME DISTRIBUTION",
+                font=dict(size=14, color="#ffffff", family="Outfit"),
+                x=0, y=0.95
+            ),
+            paper_bgcolor="#111625",
+            margin=dict(l=20, r=20, t=50, b=20)
+        )
         return fig
     counts = sim["regime"].value_counts()
     fig = go.Figure(go.Pie(
-        labels=[r.replace("_"," ").title() for r in counts.index],
+        labels=[r.replace("_"," ").upper() for r in counts.index],
         values=counts.values,
-        marker_colors=[REGIME_COLOURS.get(r,"#888") for r in counts.index],
-        hole=0.4,
+        marker=dict(
+            colors=[REGIME_COLOURS.get(r,"#8892b0") for r in counts.index],
+            line=dict(color="#111625", width=2)
+        ),
+        hole=0.45,
+        textinfo="percent+label",
+        textfont=dict(family="Outfit", size=11)
     ))
-    fig.update_layout(title="Regime Distribution", paper_bgcolor="white",
-                      margin=dict(l=20,r=20,t=40,b=20))
+    fig.update_layout(
+        title=dict(
+            text="REGIME DISTRIBUTION (HISTORIC)",
+            font=dict(size=14, color="#ffffff", family="Outfit"),
+            x=0, y=0.95
+        ),
+        paper_bgcolor="#111625",
+        margin=dict(l=20, r=20, t=50, b=20),
+        template="plotly_dark",
+        showlegend=False
+    )
     return fig
 
 
 def _trade_table(trades: Optional[pd.DataFrame]):
     from dash import html
     if trades is None or trades.empty:
-        return html.P("No trades yet.", style={"color":"#888"})
+        return html.Div(
+            "NO TRADE ACTIVITY DETECTED", 
+            style={
+                "color":"#8892b0", "fontFamily":"'JetBrains Mono', monospace", 
+                "fontSize":"13px", "textAlign":"center", "padding":"40px",
+                "background":"#111625", "border":"1px solid #1f293d", "borderRadius":"6px"
+            }
+        )
     recent = trades.tail(10).iloc[::-1]
-    th = lambda t: html.Th(t, style={"padding":"8px 12px","textAlign":"left",
-                                      "fontSize":"12px","color":"#888",
-                                      "borderBottom":"2px solid #eee"})
+    th = lambda t: html.Th(t, style={
+        "padding":"12px 16px", "textAlign":"left", "fontSize":"11px", 
+        "color":"#8892b0", "borderBottom":"1px solid #1f293d", 
+        "fontFamily":"'Outfit', sans-serif", "textTransform":"uppercase", "letterSpacing":"1px"
+    })
     header = html.Tr([th(c) for c in ["Time","Symbol","Direction","Qty","Price","Value","Portfolio"]])
     rows = []
     for _, row in recent.iterrows():
-        d = row.get("direction","")
-        col = "#1D9E75" if d=="LONG" else ("#E24B4A" if d=="SHORT" else "#888")
-        td = lambda v, **s: html.Td(v, style={"padding":"6px 12px","fontSize":"12px",**s})
+        d = str(row.get("direction","")).upper()
+        col = "#00e676" if "LONG" in d or "BUY" in d else ("#ff3860" if "SHORT" in d or "SELL" in d else "#8892b0")
+        
+        td = lambda v, **s: html.Td(v, style={
+            "padding":"12px 16px", "fontSize":"12px", "color":"#ffffff",
+            "fontFamily":"'JetBrains Mono', monospace", "borderBottom":"1px solid #1f293d", **s
+        })
+        
+        badge_bg = "rgba(0, 230, 118, 0.1)" if "LONG" in d or "BUY" in d else "rgba(255, 56, 96, 0.1)"
+        badge = html.Span(d, style={
+            "color": col, "background": badge_bg, "padding": "2px 6px", 
+            "borderRadius": "4px", "fontWeight": "bold", "fontSize": "10px"
+        })
+        
         rows.append(html.Tr([
             td(str(row.get("timestamp",""))[:16]),
-            td(str(row.get("symbol","")),  fontWeight="500"),
-            td(d, color=col, fontWeight="bold"),
+            td(str(row.get("symbol","")), fontWeight="600"),
+            td(badge),
             td(f"{row.get('quantity',0):+.4f}"),
             td(f"${row.get('price',0):,.4f}"),
             td(f"${row.get('trade_value',0):,.2f}"),
-            td(f"${row.get('portfolio_val',0):,.2f}", fontWeight="500"),
-        ], style={"borderBottom":"1px solid #f0f0f0"}))
+            td(f"${row.get('portfolio_val',0):,.2f}", fontWeight="600", color="#3b82f6"),
+        ], className="trade-row", style={"background": "#111625"}))
+        
     return html.Table([header]+rows, style={
         "width":"100%","borderCollapse":"collapse",
-        "background":"#fff","borderRadius":"8px",
-        "boxShadow":"0 1px 4px rgba(0,0,0,.07)",
+        "background":"#111625","borderRadius":"6px",
+        "border":"1px solid #1f293d", "overflow":"hidden"
     })
