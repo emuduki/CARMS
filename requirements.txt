@@ -25,6 +25,7 @@ pyarrow>=12.0.0       # Parquet read/write
  
 #  ML (Phase 2+) 
 torch>=2.0.0
+torchvision>=0.15.0   # CNN encoder
 transformers>=4.35.0  # FinBERT
 # pytorch-forecasting>=1.0.0  # TFT — install separately (large)
  

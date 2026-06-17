@@ -16,7 +16,7 @@ COPY requirements.txt .
 
 # Install dependencies (CPU-only version of PyTorch to save space and resources)
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
