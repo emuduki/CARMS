@@ -13,7 +13,7 @@ requests>=2.31.0
 python-dotenv>=1.0.0
  
 #  Technical indicators 
-pandas-ta>=0.3.14b
+pandas-ta @ git+https://github.com/twopirllc/pandas-ta.git@development
  
 #  Chart image generation 
 mplfinance>=0.12.10b0
