@@ -16,6 +16,10 @@ jobs:
           username: ${{ secrets.AZURE_USERNAME }}
           key: ${{ secrets.AZURE_SSH_KEY }}
           script: |
-            cd CARMS
+            cd ~/CARMS || cd ~/carms || cd CARMS || cd carms || { echo "Directory not found"; exit 1; }
             git pull origin main
-            docker-compose up --build -d
+            if command -v docker-compose &> /dev/null; then
+              docker-compose up --build -d
+            else
+              docker compose up --build -d
+            fi

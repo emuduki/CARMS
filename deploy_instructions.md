@@ -132,3 +132,34 @@ Once the dashboard container is running, open your web browser and navigate to:
 ```
 http://<YOUR_VM_PUBLIC_IP>:8050
 ```
+
+---
+
+## Automated Deployment (CI/CD with GitHub Actions)
+
+CARMS includes a GitHub Action workflow in `.github/workflows/deploy.yml` that automatically deploys your updates to the Azure VM every time you push to the `main` branch of your GitHub repository.
+
+### Setting up Continuous Deployment
+
+To enable this, follow these steps to add your server credentials to GitHub Repository Secrets:
+
+1. **Get the required VM details**:
+   - **VM Public IP**: `40.127.8.3`
+   - **Username**: The VM user (typically `azureuser`)
+   - **Private Key**: The content of the SSH private key `.pem` file you use to log in to the VM.
+
+2. **Add Secrets to GitHub**:
+   - Go to your repository on GitHub: `https://github.com/emuduki/CARMS`
+   - Navigate to **Settings** (top tabs) > **Secrets and variables** (left sidebar) > **Actions**.
+   - Click **New repository secret** for each of the following:
+     - **Name**: `AZURE_VM_IP`
+       - **Value**: `40.127.8.3`
+     - **Name**: `AZURE_USERNAME`
+       - **Value**: `azureuser` (or your actual VM ssh username)
+     - **Name**: `AZURE_SSH_KEY`
+       - **Value**: Paste the exact contents of your private key `.pem` file (make sure to include `-----BEGIN RSA PRIVATE KEY-----` / `-----BEGIN OPENSSH PRIVATE KEY-----` and the corresponding `-----END...` footer).
+
+3. **Verify the Deployment**:
+   - Commit and push your changes to your `main` branch.
+   - Go to the **Actions** tab on your GitHub repository to watch the deployment run.
+   - The workflow will securely SSH into your VM, run `git pull`, build the new Docker images, and restart the containers in the background.
