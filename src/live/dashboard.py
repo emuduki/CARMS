@@ -49,32 +49,7 @@ def run_dashboard(save_dir: str = "models", port: int = 8050):
     app = dash.Dash(__name__, title="CARMS Terminal", external_stylesheets=external_stylesheets)
 
     app.layout = html.Div([
-        # HTML custom style injection for animation and styling overrides
-        html.Style("""
-            @keyframes blink {
-                0% { opacity: 0.25; }
-                50% { opacity: 1; }
-                100% { opacity: 0.25; }
-            }
-            .trading-card {
-                background: #111625;
-                border: 1px solid #1f293d;
-                border-radius: 6px;
-                padding: 16px 20px;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.15);
-                transition: all 0.3s ease;
-            }
-            .trading-card:hover {
-                border-color: #3b82f6;
-                box-shadow: 0 6px 12px rgba(59,130,246,0.15);
-            }
-            .trade-row {
-                transition: background-color 0.2s ease;
-            }
-            .trade-row:hover {
-                background-color: #1a2238 !important;
-            }
-        """),
+
 
         # Header
         html.Div([
