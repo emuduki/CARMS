@@ -11,10 +11,14 @@ import numpy as np
 import pandas as pd
  
 try:
-    import pandas_ta as ta
+    import pandas_ta_classic as ta
     HAS_PANDAS_TA = True
 except ImportError:
-    HAS_PANDAS_TA = False
+    try:
+        import pandas_ta as ta
+        HAS_PANDAS_TA = True
+    except ImportError:
+        HAS_PANDAS_TA = False
  
 from src.utils.logger import get_logger
  
