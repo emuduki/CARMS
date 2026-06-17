@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  carms-dashboard:
+    build: .
+    container_name: carms_dashboard
+    ports:
+      - "8050:8050"
+    volumes:
+      - ./configs:/app/configs
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./logs:/app/logs
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  # Service container to run training/phases on demand
+  # Example: docker-compose run carms-cli python main.py --phase 1
+  carms-cli:
+    build: .
+    volumes:
+      - ./configs:/app/configs
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
