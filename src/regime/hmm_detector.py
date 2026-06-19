@@ -104,12 +104,19 @@ def train_hmm(
     log.info(f"  Loaded {all_states.shape[0]:,} observations × {all_states.shape[1]} features")
 
     # ── Step 2: Scale + PCA reduction ────────────────────────
-    log.info(f"Reducing dimensions: {all_states.shape[1]} → {PCA_DIMS * _n_assets(config)}...")
+    target_dims = PCA_DIMS * _n_assets(config)
+    log.info(f"Reducing dimensions: {all_states.shape[1]} → {target_dims}...")
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(all_states)
 
-    pca = PCA(n_components=min(PCA_DIMS * _n_assets(config), X_scaled.shape[1]),
-               random_state=RANDOM_SEED)
+    max_components = min(target_dims, X_scaled.shape[1], X_scaled.shape[0])
+    if max_components < target_dims:
+        log.warning(
+            "Only %d samples available for PCA; reducing n_components from %d to %d",
+            X_scaled.shape[0], target_dims, max_components,
+        )
+
+    pca = PCA(n_components=max_components, random_state=RANDOM_SEED)
     X_pca = pca.fit_transform(X_scaled)
     variance_explained = pca.explained_variance_ratio_.cumsum()[-1]
     log.info(f"  PCA variance explained: {variance_explained:.1%}")
