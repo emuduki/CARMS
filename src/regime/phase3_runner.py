@@ -32,7 +32,7 @@ from src.regime.regime_analyser import analyse_regimes
 log = get_logger(__name__)
 
 
-def run_phase3(config: dict, save_dir: str = "models", n_regimes: int = 4):
+def run_phase3(config: dict, save_dir: str = "models", n_regimes: int = 3):
     """
     Full Phase 3 pipeline.
 
@@ -112,7 +112,8 @@ def _merge_regime_into_states(labels_df: pd.DataFrame, config: dict):
         regime_aligned = labels_df[label_cols].reindex(df.index)
 
         # Forward-fill missing regime labels (weekends / non-trading days)
-        regime_aligned = regime_aligned.ffill().bfill()
+        # Note: We do NOT backward-fill to prevent future data from leaking into the past.
+        regime_aligned = regime_aligned.ffill()
 
         # Merge into state vector
         for col in label_cols:

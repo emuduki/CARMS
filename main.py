@@ -16,6 +16,18 @@ import argparse
 import sys
 from pathlib import Path
 
+# Configure stdout and stderr to use UTF-8 encoding to avoid Windows cp1252 print crashes
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+if hasattr(sys.stderr, 'reconfigure'):
+    try:
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 from src.utils.logger import get_logger, load_config, print_banner
 from src.utils.validator import validate_phase1
 
@@ -68,9 +80,11 @@ def main():
     parser.add_argument("--phase",    type=int, choices=[1,2,3,4,5,6])
     parser.add_argument("--validate", action="store_true")
     parser.add_argument("--quick",    action="store_true", help="Limit images to 100 per asset")
-    parser.add_argument("--device",   default="cpu", choices=["cpu","cuda"], help="Training device")
+    import torch
+    default_device = "cuda" if torch.cuda.is_available() else "cpu"
+    parser.add_argument("--device",   default=default_device, choices=["cpu","cuda"], help="Training device")
     parser.add_argument("--symbol",     default=None,  help="Train only this symbol (Phase 2)")
-    parser.add_argument("--n_regimes",  default=4, type=int, help="Number of HMM regimes (Phase 3)")
+    parser.add_argument("--n_regimes",  default=3, type=int, help="Number of HMM regimes (Phase 3)")
     parser.add_argument("--agent",      default=None,  help="Train single agent: forex, crypto, gold (Phase 4)")
     parser.add_argument("--live",       action="store_true", help="Live paper trading via APIs (Phase 5)")
     parser.add_argument("--capital",    default=10000.0, type=float, help="Starting paper capital (Phase 5)")

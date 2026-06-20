@@ -224,7 +224,14 @@ class TradingEnv:
             float(self.position > 0),
         ], dtype=np.float32)
 
-        return np.concatenate([state_vec, prob_vec, portfolio_vec])
+        obs = np.concatenate([state_vec, prob_vec, portfolio_vec])
+        
+        # Add slight Gaussian noise during training to prevent sequence memorisation
+        if self.mode == "train":
+            noise = np.random.normal(0, 0.01, size=obs.shape).astype(np.float32)
+            obs += noise
+            
+        return obs
 
     def _get_info(self) -> dict:
         """Returns episode statistics."""

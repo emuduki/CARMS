@@ -99,4 +99,14 @@ def print_banner():
 {GRAY}  Cross-Asset Regime-Aware Multi-Agent Trading System{RESET}
 {GRAY}  Phase 1 — Data Pipeline & Feature Engineering{RESET}
 """
-    print(banner)
+    try:
+        print(banner)
+    except UnicodeEncodeError:
+        # Fallback to plain ASCII banner for Windows systems that don't support UTF-8 in stdout
+        ascii_banner = f"""
+{CYAN}{BOLD}
+  CARMS - Cross-Asset Regime-Aware Multi-Agent Trading System
+{RESET}
+{GRAY}  Phase 1 - Data Pipeline & Feature Engineering{RESET}
+"""
+        print(ascii_banner)

@@ -58,6 +58,7 @@ class LiveStateBuilder:
 
         # Loaded models (lazy-loaded on first use)
         self._tft_models    = {}
+        self._fusion_models = {}
         self._hmm_model     = None
         self._hmm_pca       = None
         self._hmm_scaler    = None
@@ -92,15 +93,15 @@ class LiveStateBuilder:
         if feat_df is None or feat_df.empty:
             return None
 
-        # Step 3: TFT embedding (64-d)
-        tft_embed = self._get_tft_embedding(symbol, feat_df)
+        # Step 3: Fused state embedding (128-d)
+        fused_state = self._get_fused_state(symbol, feat_df)
 
         # Step 4: regime probabilities (4-d)
-        regime_probs = self._get_regime_probs(tft_embed)
+        regime_probs = self._get_regime_probs()
 
         # Step 5: assemble observation
         obs = np.concatenate([
-            tft_embed.astype(np.float32),
+            fused_state.astype(np.float32),
             regime_probs.astype(np.float32),
             portfolio_state.astype(np.float32),
         ])
@@ -122,15 +123,21 @@ class LiveStateBuilder:
         if self._hmm_model is None:
             return {"regime": 2, "name": "ranging", "confidence": 0.5}
 
-        # Build a combined feature vector from all available assets
+        # Build a combined feature vector from all available assets (each must be 128-d)
         all_embeds = []
         for sym_list in ASSETS.values():
             for sym in sym_list:
                 self._refresh_prices(sym)
                 feat_df = self._compute_features(sym)
+                fused = None
                 if feat_df is not None and not feat_df.empty:
-                    embed = self._get_tft_embedding(sym, feat_df)
-                    all_embeds.append(embed)
+                    fused = self._get_fused_state(sym, feat_df)
+                
+                if fused is not None:
+                    all_embeds.append(fused)
+                else:
+                    log.warning(f"  Missing live data for HMM alignment on {sym} — padding with zeros")
+                    all_embeds.append(np.zeros(128, dtype=np.float32))
 
         if not all_embeds:
             return {"regime": 2, "name": "ranging", "confidence": 0.5}
@@ -270,30 +277,37 @@ class LiveStateBuilder:
             log.warning(f"TFT embedding failed for {symbol}: {e}")
             return np.zeros(64, dtype=np.float32)
 
-    def _get_regime_probs(self, tft_embed: np.ndarray) -> np.ndarray:
+    def _get_regime_probs(self) -> np.ndarray:
         """Returns 4-d regime probability vector."""
-        from src.regime.hmm_detector import load_hmm
-        if self._hmm_model is None:
-            self._hmm_model, self._hmm_pca, self._hmm_scaler, self._regime_map = \
-                load_hmm(str(self.save_dir))
+        regime_info = self.get_current_regime()
+        probs = regime_info.get("probabilities", [0.25] * 4)
+        return np.array(probs, dtype=np.float32)
 
-        if self._hmm_model is None:
-            return np.array([0.25, 0.25, 0.25, 0.25], dtype=np.float32)
+    def _get_fused_state(self, symbol: str, feat_df: pd.DataFrame) -> np.ndarray:
+        """
+        Runs the FusionLayer to construct the 128-d fused state vector.
+        Pads missing CNN and news sentiment modalities with zeros for live inference.
+        """
+        from src.encoders.fusion import load_fusion_layer
+        import torch
 
+        if symbol not in self._fusion_models:
+            model = load_fusion_layer(symbol, str(self.save_dir), self.device)
+            if model is None:
+                # Fallback: if fusion layer checkpoint is missing, return zero-padded TFT
+                tft = self._get_tft_embedding(symbol, feat_df)
+                return np.pad(tft, (0, 64)).astype(np.float32)
+            self._fusion_models[symbol] = model
+
+        fusion_model = self._fusion_models[symbol]
+        tft_embed = self._get_tft_embedding(symbol, feat_df)
         try:
-            # Pad to expected dimension if needed
-            expected = self._hmm_pca.n_features_in_
-            x = tft_embed[:expected] if len(tft_embed) >= expected \
-                else np.pad(tft_embed, (0, expected - len(tft_embed)))
-            x_scaled  = self._hmm_scaler.transform(x.reshape(1, -1))
-            x_reduced = self._hmm_pca.transform(x_scaled)
-            probs = self._hmm_model.predict_proba(x_reduced)[0]
-            # Reorder to match semantic regime labels
-            reordered = np.zeros(4, dtype=np.float32)
-            for raw, final in self._regime_map.items():
-                if raw < len(probs) and final < 4:
-                    reordered[final] = probs[raw]
-            return reordered
+            tft_t  = torch.FloatTensor(tft_embed).unsqueeze(0).to(self.device)
+            cnn_t  = torch.zeros((1, 64), dtype=torch.float32).to(self.device)
+            sent_t = torch.zeros((1, 32), dtype=torch.float32).to(self.device)
+            with torch.no_grad():
+                fused_t = fusion_model(tft_t, cnn_t, sent_t)
+                return fused_t.cpu().squeeze(0).numpy().astype(np.float32)
         except Exception as e:
-            log.warning(f"Regime prob failed: {e}")
-            return np.array([0.25, 0.25, 0.25, 0.25], dtype=np.float32)
+            log.warning(f"Fusion layer inference failed for {symbol}: {e}")
+            return np.pad(tft_embed, (0, 64)).astype(np.float32)

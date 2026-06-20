@@ -36,7 +36,7 @@ from src.utils.logger import get_logger
 
 log = get_logger(__name__)
 
-N_REGIMES   = 4
+N_REGIMES   = 3
 PCA_DIMS    = 16     # Reduce 128-d state to 16-d before HMM
 N_ITER      = 200    # HMM EM iterations
 RANDOM_SEED = 42
@@ -45,14 +45,12 @@ REGIME_NAMES = {
     0: "trending_up",
     1: "trending_down",
     2: "ranging",
-    3: "crisis",
 }
 
 REGIME_COLOURS = {
     0: "#1D9E75",   # green
     1: "#E24B4A",   # red
     2: "#888780",   # gray
-    3: "#D85A30",   # orange
 }
 
 
@@ -100,6 +98,16 @@ def train_hmm(
     if all_states is None or len(all_states) == 0:
         log.error("No state vectors found — run Phase 2 first")
         return None, None, None, None
+
+    if len(common_dates) < 100:
+        log.warning("=" * 65)
+        log.warning(f"CRITICAL WARNING: Only {len(common_dates)} common dates available for regime detection.")
+        log.warning("This is usually caused by running Phase 1/2 in '--quick' mode or data constraints.")
+        log.warning("Training HMM on so few dates will result in a degenerate solution and severe RL overfitting.")
+        log.warning("Please make sure to run the full pipeline without '--quick':")
+        log.warning("  python main.py --phase 1")
+        log.warning("  python main.py --phase 2")
+        log.warning("=" * 65)
 
     log.info(f"  Loaded {all_states.shape[0]:,} observations × {all_states.shape[1]} features")
 
@@ -247,6 +255,8 @@ def _load_and_align_states(states_dir: Path, config: dict):
         path = states_dir / f"{safe}_states.parquet"
         if path.exists():
             df = pd.read_parquet(path)
+            state_cols = [c for c in df.columns if c.startswith("state_")]
+            df = df[state_cols]
             frames[sym] = df
             log.info(f"  Loaded {sym}: {df.shape}")
         else:
@@ -317,23 +327,19 @@ def _auto_label_regimes(
                  f"ret={stats[state]['mean_ret']:+.4f}  "
                  f"vol={stats[state]['mean_vol']:.4f}")
 
-    # Assign semantic labels:
-    #   Highest vol  → crisis (3)
-    #   Lowest vol + positive ret  → trending up (0)
-    #   Lowest vol + negative ret  → trending down (1)
-    #   Medium vol   → ranging (2)
-    sorted_by_vol = sorted(stats.keys(), key=lambda s: stats[s]["mean_vol"])
-
+    # Assign semantic labels for 3 regimes:
+    # Sort all states by mean return
+    sorted_by_ret = sorted(stats.keys(), key=lambda s: stats[s]["mean_ret"])
+    
     regime_map = {}
-    regime_map[sorted_by_vol[-1]] = 3   # highest vol = crisis
-
-    remaining = sorted_by_vol[:-1]
-    # Among remaining, sort by mean return
-    sorted_by_ret = sorted(remaining, key=lambda s: stats[s]["mean_ret"])
-    regime_map[sorted_by_ret[-1]] = 0   # highest return = trending up
-    regime_map[sorted_by_ret[0]]  = 1   # lowest return  = trending down
-    for s in sorted_by_ret[1:-1]:
-        regime_map[s] = 2               # middle = ranging
+    if len(sorted_by_ret) >= 3:
+        regime_map[sorted_by_ret[-1]] = 0   # highest return = trending up
+        regime_map[sorted_by_ret[0]]  = 1   # lowest return  = trending down
+        regime_map[sorted_by_ret[1]]  = 2   # middle = ranging
+    else:
+        # Fallback if fewer than 3 states are predicted
+        for i, s in enumerate(sorted_by_ret):
+            regime_map[s] = i
 
     log.info(f"  Regime mapping: {regime_map}")
     return regime_map
@@ -381,7 +387,7 @@ def _print_regime_summary(labels_df: pd.DataFrame, dates, config: dict):
     from src.features.indicators import load_features
     price_df = load_features("BTC-USD", config["data"]["processed_dir"])
 
-    for name in ["trending_up", "trending_down", "ranging", "crisis"]:
+    for name in ["trending_up", "trending_down", "ranging"]:
         mask = labels_df["regime_name"] == name
         n    = mask.sum()
         pct  = n / len(labels_df) * 100
