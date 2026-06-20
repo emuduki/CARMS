@@ -201,8 +201,9 @@ class TradingEnv:
         Financial log returns are tiny (~0.001) — without scaling the agent
         sees near-zero rewards and struggles to learn a signal.
         """
-        # Scale return to a learnable magnitude
-        scaled_return = step_return * 100.0
+        # Scale return to a learnable magnitude, clipping to prevent extreme spikes
+        clipped_step_return = np.clip(step_return, -0.10, 0.10)
+        scaled_return = clipped_step_return * 100.0
 
         # Drawdown penalty: only kicks in beyond 15%, and linear (not quadratic)
         # Quadratic penalties were too aggressive at early training
