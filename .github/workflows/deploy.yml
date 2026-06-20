@@ -18,8 +18,4 @@ jobs:
           script: |
             cd ~/CARMS || cd ~/carms || cd CARMS || cd carms || { echo "Directory not found"; exit 1; }
             git pull origin main
-            if command -v docker-compose &> /dev/null; then
-              docker-compose up --build -d
-            else
-              docker compose up --build -d
-            fi
+            docker compose up --build -d

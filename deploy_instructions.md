@@ -78,13 +78,24 @@ Since the B1s VM only has 1GB of RAM, installing packages like PyTorch or runnin
 
 ## Step 4: Install Docker & Docker Compose on VM
 
-Run the following script on the VM to install Docker:
+Run the following script on the VM to install Docker and the **Compose v2 plugin** (the legacy `docker-compose` v1 is incompatible with Docker Engine v25+):
 ```bash
-sudo apt update && sudo apt install -y docker.io docker-compose
+sudo apt update && sudo apt install -y docker.io docker-compose-plugin
 sudo systemctl enable --now docker
 sudo usermod -aG docker $USER
 ```
 *Note: Log out and log back in (or run `newgrp docker`) for group permissions to take effect.*
+
+> **If you already have the old `docker-compose` installed**, remove it first:
+> ```bash
+> sudo apt-get remove -y docker-compose
+> sudo apt-get install -y docker-compose-plugin
+> ```
+
+Verify the installation:
+```bash
+docker compose version   # Should print Docker Compose v2.x.x
+```
 
 ---
 
@@ -102,11 +113,11 @@ sudo usermod -aG docker $USER
    ```
 3. Build and launch the containerized application:
    ```bash
-   docker-compose up --build -d
+   docker compose up --build -d
    ```
 4. Check the application logs to ensure it started successfully:
    ```bash
-   docker-compose logs -f
+   docker compose logs -f
    ```
 
 ---
@@ -117,11 +128,11 @@ To execute data ingestion, training, or simulations inside the docker context:
 
 - **Run Phase 1 (Data pipeline):**
   ```bash
-  docker-compose run --rm carms-cli python main.py --phase 1
+  docker compose run --rm carms-cli python main.py --phase 1
   ```
 - **Run Phase 2 (Train models):**
   ```bash
-  docker-compose run --rm carms-cli python main.py --phase 2
+  docker compose run --rm carms-cli python main.py --phase 2
   ```
 
 ---
@@ -163,3 +174,15 @@ To enable this, follow these steps to add your server credentials to GitHub Repo
    - Commit and push your changes to your `main` branch.
    - Go to the **Actions** tab on your GitHub repository to watch the deployment run.
    - The workflow will securely SSH into your VM, run `git pull`, build the new Docker images, and restart the containers in the background.
+
+---
+
+## Troubleshooting
+
+### `KeyError: 'ContainerConfig'`
+This error occurs when using the legacy `docker-compose` v1.29.2 with Docker Engine v25+. Fix it by migrating to Docker Compose v2:
+```bash
+sudo apt-get remove -y docker-compose
+sudo apt-get install -y docker-compose-plugin
+# Then use 'docker compose' (no hyphen) for all commands
+```
