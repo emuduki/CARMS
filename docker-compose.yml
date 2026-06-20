@@ -11,6 +11,8 @@ services:
       - ./data:/app/data
       - ./models:/app/models
       - ./logs:/app/logs
+      - ./src:/app/src
+      - ./main.py:/app/main.py
     restart: unless-stopped
     environment:
       - PYTHONUNBUFFERED=1
@@ -24,5 +26,7 @@ services:
       - ./data:/app/data
       - ./models:/app/models
       - ./logs:/app/logs
+      - ./src:/app/src
+      - ./main.py:/app/main.py
     environment:
       - PYTHONUNBUFFERED=1

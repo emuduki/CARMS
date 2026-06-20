@@ -278,8 +278,36 @@ class PPOAgent:
             metrics["value_loss"]  += v_loss.item() / n_epochs
             metrics["entropy"]     += entropy.item() / n_epochs
 
+        # Check weights sanity before finishing update
+        self._check_and_reset_weights()
+
         self._clear_buffer()
         return metrics
+
+    def _check_and_reset_weights(self):
+        """Checks if any weights are NaN/Inf and resets them if so."""
+        has_nan = False
+        for name, param in self.actor.named_parameters():
+            if torch.isnan(param.data).any() or torch.isinf(param.data).any():
+                has_nan = True
+                break
+        for name, param in self.critic.named_parameters():
+            if torch.isnan(param.data).any() or torch.isinf(param.data).any():
+                has_nan = True
+                break
+        
+        if has_nan:
+            log.warning("Detected NaN/Inf weights in PPO agent. Resetting weights to initial distribution.")
+            # Re-initialize weights
+            for m in self.actor.modules():
+                if isinstance(m, nn.Linear):
+                    nn.init.orthogonal_(m.weight, gain=0.01 if m == self.actor.mean_head else np.sqrt(2))
+                    nn.init.zeros_(m.bias)
+            nn.init.zeros_(self.actor.log_std_head)
+            for m in self.critic.modules():
+                if isinstance(m, nn.Linear):
+                    nn.init.orthogonal_(m.weight, gain=np.sqrt(2))
+                    nn.init.zeros_(m.bias)
 
     def _compute_gae(self):
         """Computes Generalised Advantage Estimation."""
