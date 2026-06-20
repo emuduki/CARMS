@@ -80,7 +80,11 @@ class PPOActor(nn.Module):
 
     def forward(self, obs: torch.Tensor):
         x       = self.backbone(obs)
-        mean    = torch.tanh(self.mean_head(x))
+        # Clamp pre-activation to prevent exploding values before tanh
+        raw     = self.mean_head(x).clamp(-10.0, 10.0)
+        mean    = torch.tanh(raw)
+        # Safety: replace any residual NaN (e.g. from corrupt input) with 0
+        mean    = torch.nan_to_num(mean, nan=0.0)
         log_std = self.log_std_head.clamp(-4, 2)
         std     = log_std.exp()
         dist    = Normal(mean, std)
@@ -136,6 +140,8 @@ class PPOAgent:
 
     def select_action(self, obs: np.ndarray) -> float:
         """Selects action given observation. Returns scalar action."""
+        # Sanitise obs before it enters the network
+        obs = np.nan_to_num(np.asarray(obs, dtype=np.float32), nan=0.0, posinf=1.0, neginf=-1.0)
         with torch.no_grad():
             obs_t  = torch.FloatTensor(obs).unsqueeze(0).to(self.device)
             action, log_prob = self.actor.get_action(obs_t)

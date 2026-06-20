@@ -89,6 +89,18 @@ class TradingEnv:
         prob_cols    = [c for c in states_df.columns if c.startswith("prob_")]
 
         common = states_df.index.intersection(prices_df.index)
+
+        # Drop rows where regime probabilities OR state vectors are NaN
+        # (NaN state vectors propagate through the MLP and cause nan mean → crash)
+        drop_cols = []
+        if prob_cols:
+            drop_cols += prob_cols
+        if state_cols:
+            drop_cols += state_cols
+        if drop_cols:
+            states_df = states_df.loc[common].dropna(subset=drop_cols)
+            common = states_df.index
+
         self.states  = states_df.loc[common, state_cols].values.astype(np.float32)
         self.probs   = states_df.loc[common, prob_cols].values.astype(np.float32) \
                        if prob_cols else np.zeros((len(common), 4), dtype=np.float32)
@@ -225,12 +237,14 @@ class TradingEnv:
         ], dtype=np.float32)
 
         obs = np.concatenate([state_vec, prob_vec, portfolio_vec])
-        
+
         # Add slight Gaussian noise during training to prevent sequence memorisation
         if self.mode == "train":
             noise = np.random.normal(0, 0.01, size=obs.shape).astype(np.float32)
             obs += noise
-            
+
+        # Final NaN/Inf guard — should never fire after dropna above, but just in case
+        obs = np.nan_to_num(obs, nan=0.0, posinf=1.0, neginf=-1.0)
         return obs
 
     def _get_info(self) -> dict:
