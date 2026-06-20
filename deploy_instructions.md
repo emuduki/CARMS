@@ -78,19 +78,24 @@ Since the B1s VM only has 1GB of RAM, installing packages like PyTorch or runnin
 
 ## Step 4: Install Docker & Docker Compose on VM
 
-Run the following script on the VM to install Docker and the **Compose v2 plugin** (the legacy `docker-compose` v1 is incompatible with Docker Engine v25+):
+### 4a. Install Docker Engine
 ```bash
-sudo apt update && sudo apt install -y docker.io docker-compose-plugin
+sudo apt update && sudo apt install -y docker.io
 sudo systemctl enable --now docker
 sudo usermod -aG docker $USER
 ```
 *Note: Log out and log back in (or run `newgrp docker`) for group permissions to take effect.*
 
-> **If you already have the old `docker-compose` installed**, remove it first:
-> ```bash
-> sudo apt-get remove -y docker-compose
-> sudo apt-get install -y docker-compose-plugin
-> ```
+### 4b. Install Docker Compose v2 (CLI Plugin)
+
+> **Important**: `docker.io` from Ubuntu's apt repo does **not** include `docker-compose-plugin`. Install Compose v2 directly from GitHub as a CLI plugin instead:
+
+```bash
+mkdir -p ~/.docker/cli-plugins
+curl -SL "https://github.com/docker/compose/releases/download/v2.27.1/docker-compose-linux-x86_64" \
+  -o ~/.docker/cli-plugins/docker-compose
+chmod +x ~/.docker/cli-plugins/docker-compose
+```
 
 Verify the installation:
 ```bash
@@ -180,9 +185,13 @@ To enable this, follow these steps to add your server credentials to GitHub Repo
 ## Troubleshooting
 
 ### `KeyError: 'ContainerConfig'`
-This error occurs when using the legacy `docker-compose` v1.29.2 with Docker Engine v25+. Fix it by migrating to Docker Compose v2:
+This error occurs when using the legacy `docker-compose` v1.29.2 with Docker Engine v25+. Fix it by installing Docker Compose v2 as a CLI plugin:
 ```bash
-sudo apt-get remove -y docker-compose
-sudo apt-get install -y docker-compose-plugin
-# Then use 'docker compose' (no hyphen) for all commands
+mkdir -p ~/.docker/cli-plugins
+curl -SL "https://github.com/docker/compose/releases/download/v2.27.1/docker-compose-linux-x86_64" \
+  -o ~/.docker/cli-plugins/docker-compose
+chmod +x ~/.docker/cli-plugins/docker-compose
+# Verify, then use 'docker compose' (no hyphen) for all commands
+docker compose version
 ```
+> Note: `docker-compose-plugin` via `apt` is only available when using Docker's **official** repo, not Ubuntu's `docker.io` package.
