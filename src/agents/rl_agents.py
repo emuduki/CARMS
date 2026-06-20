@@ -63,9 +63,22 @@ class MLP(nn.Module):
             nn.LayerNorm(hidden),
             nn.ReLU(),
         )
+        # Orthogonal init: keeps initial gradient norms near 1 —
+        # reduces the chance of early exploding gradients that corrupt LayerNorm.
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.orthogonal_(m.weight, gain=np.sqrt(2))
+                nn.init.zeros_(m.bias)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.net(x)
+        # Guard input before it reaches LayerNorm.
+        # LayerNorm computes (x - mean) / std; if all inputs are identical
+        # std = 0 → NaN.  nan_to_num + clamp prevent this.
+        x = torch.nan_to_num(x, nan=0.0, posinf=1.0, neginf=-1.0)
+        x = x.clamp(-1e3, 1e3)
+        out = self.net(x)
+        # Guard output in case weights have already drifted to NaN
+        return torch.nan_to_num(out, nan=0.0)
 
 
 # ── PPO Agent ─────────────────────────────────────────────────
@@ -77,23 +90,26 @@ class PPOActor(nn.Module):
         self.backbone = MLP(obs_dim, hidden)
         self.mean_head    = nn.Linear(hidden, action_dim)
         self.log_std_head = nn.Parameter(torch.zeros(action_dim))
+        # Smaller final-layer gain keeps initial actions near zero,
+        # preventing saturation that can produce constant (zero-variance) activations.
+        nn.init.orthogonal_(self.mean_head.weight, gain=0.01)
+        nn.init.zeros_(self.mean_head.bias)
 
     def forward(self, obs: torch.Tensor):
         x       = self.backbone(obs)
-        # Clamp pre-activation to prevent exploding values before tanh
         raw     = self.mean_head(x).clamp(-10.0, 10.0)
         mean    = torch.tanh(raw)
-        # Safety: replace any residual NaN (e.g. from corrupt input) with 0
+        # Final NaN safety net — should never fire after the backbone guard,
+        # but keeps the distribution constructor from crashing.
         mean    = torch.nan_to_num(mean, nan=0.0)
         log_std = self.log_std_head.clamp(-4, 2)
-        std     = log_std.exp()
+        std     = log_std.exp().clamp(1e-4, 4.0)   # also floor std to avoid degenerate dist
         dist    = Normal(mean, std)
         return dist
 
     def get_action(self, obs: torch.Tensor):
-        dist   = self(obs)
-        action = dist.sample()
-        action = action.clamp(-1.0, 1.0)
+        dist     = self(obs)
+        action   = dist.sample().clamp(-1.0, 1.0)
         log_prob = dist.log_prob(action).sum(-1)
         return action, log_prob
 
@@ -168,11 +184,26 @@ class PPOAgent:
         # ── Compute GAE advantages ────────────────────────────
         advantages, returns = self._compute_gae()
 
-        obs_t      = torch.FloatTensor(np.array(self.buf_obs)).to(self.device)
-        actions_t  = torch.FloatTensor(np.array(self.buf_actions)).unsqueeze(-1).to(self.device)
-        old_lp_t   = torch.FloatTensor(self.buf_logprobs).to(self.device)
-        adv_t      = torch.FloatTensor(advantages).to(self.device)
-        ret_t      = torch.FloatTensor(returns).to(self.device)
+        # Sanitise collected rollout data — NaN in obs/actions would produce
+        # NaN log-probs → NaN loss → NaN gradients → NaN weights → crash.
+        obs_arr = np.nan_to_num(
+            np.array(self.buf_obs, dtype=np.float32),
+            nan=0.0, posinf=1.0, neginf=-1.0,
+        )
+        act_arr = np.nan_to_num(
+            np.array(self.buf_actions, dtype=np.float32), nan=0.0
+        )
+        # Clip advantages before normalisation to stop a single huge
+        # advantage from dominating the ratio and producing Inf.
+        adv_arr = np.clip(np.array(advantages, dtype=np.float32), -10.0, 10.0)
+        ret_arr = np.clip(np.array(returns,    dtype=np.float32), -10.0, 10.0)
+
+        obs_t      = torch.FloatTensor(obs_arr).to(self.device)
+        actions_t  = torch.FloatTensor(act_arr).unsqueeze(-1).to(self.device)
+        # Clamp stored log-probs: very negative values → ratio = exp(huge) = Inf
+        old_lp_t   = torch.FloatTensor(self.buf_logprobs).to(self.device).clamp(-20.0, 2.0)
+        adv_t      = torch.FloatTensor(adv_arr).to(self.device)
+        ret_t      = torch.FloatTensor(ret_arr).to(self.device)
 
         # Normalise advantages
         adv_t = (adv_t - adv_t.mean()) / (adv_t.std() + 1e-8)
@@ -182,15 +213,22 @@ class PPOAgent:
         for _ in range(n_epochs):
             # Policy update
             dist     = self.actor(obs_t)
-            new_lp   = dist.log_prob(actions_t).sum(-1)
+            # Clamp new log-probs for same reason as old_lp_t
+            new_lp   = dist.log_prob(actions_t).sum(-1).clamp(-20.0, 2.0)
             entropy  = dist.entropy().sum(-1).mean()
-            ratio    = (new_lp - old_lp_t).exp()
+            # Clamp ratio to prevent Inf * 0 = NaN in surrogate
+            ratio    = (new_lp - old_lp_t).exp().clamp(0.0, 10.0)
 
             surr1    = ratio * adv_t
             surr2    = ratio.clamp(1 - CLIP_EPS, 1 + CLIP_EPS) * adv_t
             p_loss   = -torch.min(surr1, surr2).mean()
             e_loss   = -ENTROPY_COEF * entropy
             actor_loss = p_loss + e_loss
+
+            # Skip the update step if loss is NaN — this can happen at the
+            # very start when buffers are nearly empty; safer to skip than crash.
+            if torch.isnan(actor_loss) or torch.isinf(actor_loss):
+                continue
 
             self.opt_a.zero_grad()
             actor_loss.backward()
@@ -201,10 +239,11 @@ class PPOAgent:
             values   = self.critic(obs_t).squeeze(-1)
             v_loss   = VALUE_COEF * F.mse_loss(values, ret_t)
 
-            self.opt_c.zero_grad()
-            v_loss.backward()
-            nn.utils.clip_grad_norm_(self.critic.parameters(), MAX_GRAD_NORM)
-            self.opt_c.step()
+            if not (torch.isnan(v_loss) or torch.isinf(v_loss)):
+                self.opt_c.zero_grad()
+                v_loss.backward()
+                nn.utils.clip_grad_norm_(self.critic.parameters(), MAX_GRAD_NORM)
+                self.opt_c.step()
 
             metrics["policy_loss"] += p_loss.item() / n_epochs
             metrics["value_loss"]  += v_loss.item() / n_epochs
@@ -286,12 +325,16 @@ class SACActorNet(nn.Module):
         self.backbone = MLP(obs_dim, hidden)
         self.mean_head    = nn.Linear(hidden, 1)
         self.log_std_head = nn.Linear(hidden, 1)
+        nn.init.orthogonal_(self.mean_head.weight, gain=0.01)
+        nn.init.zeros_(self.mean_head.bias)
+        nn.init.orthogonal_(self.log_std_head.weight, gain=0.01)
+        nn.init.zeros_(self.log_std_head.bias)
 
     def forward(self, obs: torch.Tensor):
         x       = self.backbone(obs)
         mean    = self.mean_head(x)
         log_std = self.log_std_head(x).clamp(-4, 2)
-        std     = log_std.exp()
+        std     = log_std.exp().clamp(1e-4, 4.0)
         dist    = Normal(mean, std)
         action_raw = dist.rsample()
         action  = torch.tanh(action_raw)
