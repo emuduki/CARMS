@@ -193,7 +193,7 @@ class PortfolioManager:
         return trade_record
 
     def get_portfolio_state_vector(self) -> np.ndarray:
-        """Returns 5-d portfolio state vector for RL agent observation."""
+        """Returns 6-d portfolio state vector for RL agent observation."""
         total_pos_val = sum(
             abs(qty) * self.entry_prices.get(sym, 0)
             for sym, qty in self.positions.items()
@@ -204,6 +204,7 @@ class PortfolioManager:
             self.cash / self.portfolio_value if self.portfolio_value > 0 else 1.0,
             total_pos_val / max(self.portfolio_value, 1.0),        # Position ratio
             self.n_trades / max(len(self.daily_values), 1),        # Trade frequency
+            float(any(v > 0 for v in self.positions.values())),    # Any long?
         ], dtype=np.float32)
 
     def get_metrics(self) -> dict:

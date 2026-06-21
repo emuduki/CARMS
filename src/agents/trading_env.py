@@ -55,9 +55,9 @@ TRANSACTION_COST = 0.0001   # 0.01% per trade
 MAX_DRAWDOWN     = 0.20     # 20% drawdown ends episode
 INITIAL_CAPITAL  = 10_000   # Starting portfolio value ($)
 STATE_DIM        = 128      # From Phase 2 fusion layer
-REGIME_DIM       = 4        # Regime probabilities
-PORTFOLIO_DIM    = 5        # Portfolio state features
-OBS_DIM          = STATE_DIM + REGIME_DIM + PORTFOLIO_DIM  # 137
+REGIME_DIM       = 4        # Regime probabilities (but HMM uses 3, so actual is 3)
+PORTFOLIO_DIM    = 6        # Portfolio state features
+OBS_DIM          = 137      # STATE_DIM + 3 + PORTFOLIO_DIM = 137
 
 
 class TradingEnv:
@@ -227,13 +227,14 @@ class TradingEnv:
         state_vec = self.states[t]
         prob_vec  = self.probs[t]
 
-        # Normalise portfolio features (5-d — must match PORTFOLIO_DIM)
+        # Normalise portfolio features (6-d — must match PORTFOLIO_DIM)
         portfolio_vec = np.array([
             self.position,
             (self.portfolio_val / INITIAL_CAPITAL) - 1.0,
             (self.peak_val - self.portfolio_val) / (self.peak_val + 1e-8),
             min(self.holding_days / 20.0, 1.0),
             self.trade_count / max(self.t, 1),
+            float(self.position > 0),
         ], dtype=np.float32)
 
         obs = np.concatenate([state_vec, prob_vec, portfolio_vec])
