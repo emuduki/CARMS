@@ -7,7 +7,7 @@ using the regime-labelled state vectors from Phase 3.
 State space:
   - 128-d fused state vector (TFT + CNN + FinBERT)
   - 4-d regime probabilities
-  - 5-d portfolio state (position, cash, drawdown, holding_days, unrealised_pnl)
+  - 5-d portfolio state (position, portfolio_return, drawdown, holding_days_norm, trade_rate)
   - Total: 137-d observation vector
 
 Action space (continuous):
@@ -56,8 +56,8 @@ MAX_DRAWDOWN     = 0.20     # 20% drawdown ends episode
 INITIAL_CAPITAL  = 10_000   # Starting portfolio value ($)
 STATE_DIM        = 128      # From Phase 2 fusion layer
 REGIME_DIM       = 4        # Regime probabilities
-PORTFOLIO_DIM    = 6        # Portfolio state features
-OBS_DIM          = STATE_DIM + REGIME_DIM + PORTFOLIO_DIM  # 138
+PORTFOLIO_DIM    = 5        # Portfolio state features
+OBS_DIM          = STATE_DIM + REGIME_DIM + PORTFOLIO_DIM  # 137
 
 
 class TradingEnv:
@@ -227,14 +227,13 @@ class TradingEnv:
         state_vec = self.states[t]
         prob_vec  = self.probs[t]
 
-        # Normalise portfolio features
+        # Normalise portfolio features (5-d — must match PORTFOLIO_DIM)
         portfolio_vec = np.array([
             self.position,
             (self.portfolio_val / INITIAL_CAPITAL) - 1.0,
             (self.peak_val - self.portfolio_val) / (self.peak_val + 1e-8),
             min(self.holding_days / 20.0, 1.0),
             self.trade_count / max(self.t, 1),
-            float(self.position > 0),
         ], dtype=np.float32)
 
         obs = np.concatenate([state_vec, prob_vec, portfolio_vec])

@@ -88,7 +88,7 @@ class PaperTrader:
     def _load_agents(self) -> dict:
         """Loads all trained specialist agents."""
         agents = {}
-        obs_dim = 138   # Fixed observation dimension
+        obs_dim = 137   # Fixed observation dimension
 
         for agent_name, cfg in AGENT_CONFIGS.items():
             agent_type = cfg["type"]
@@ -296,7 +296,7 @@ def run_paper_trade_simulation(
 
     portfolio = PortfolioManager(save_dir, capital)
     agents    = {}
-    obs_dim   = 138
+    obs_dim   = 137
 
     for agent_name, cfg in AGENT_CONFIGS.items():
         agent_type = cfg["type"]

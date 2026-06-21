@@ -13,7 +13,7 @@ Two algorithms used:
     - More sample-efficient but needs more memory
 
 Both use the same network architecture:
-  Input (138-d obs) → MLP(256, 256) → policy/value heads
+  Input (137-d obs) → MLP(256, 256) → policy/value heads
 
 The agents are regime-aware: the observation vector includes
 regime probabilities from Phase 3, so the policy learns to
