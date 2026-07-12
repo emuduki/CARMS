@@ -32,7 +32,10 @@ import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
+from scipy.special import logsumexp
+
 from src.utils.logger import get_logger
+from src.utils.data_splits import get_test_start
 
 log = get_logger(__name__)
 
@@ -130,7 +133,22 @@ def train_hmm(
     log.info(f"  PCA variance explained: {variance_explained:.1%}")
     log.info(f"  Feature matrix: {X_pca.shape}")
 
-    # ── Step 3: Train HMM ─────────────────────────────────────
+    # ── Step 3: Train HMM (train period only — no test leakage) ─
+    test_start = get_test_start(config)
+    train_mask = common_dates < test_start
+    n_train    = int(train_mask.sum())
+    n_test     = int((~train_mask).sum())
+    log.info(f"  Train period: {n_train:,} days (< {test_start.date()})")
+    log.info(f"  Test period : {n_test:,} days (>= {test_start.date()})")
+
+    if n_train < 100:
+        log.warning(
+            "Only %d train days — falling back to full-sample HMM fit", n_train
+        )
+        X_fit = X_pca
+    else:
+        X_fit = X_pca[train_mask]
+
     log.info(f"Training Gaussian HMM ({n_regimes} states, {N_ITER} iterations)...")
     model = GaussianHMM(
         n_components=n_regimes,
@@ -139,13 +157,13 @@ def train_hmm(
         random_state=RANDOM_SEED,
         verbose=False,
     )
-    model.fit(X_pca)
+    model.fit(X_fit)
     log.info(f"  HMM converged: {model.monitor_.converged}")
-    log.info(f"  Log-likelihood: {model.score(X_pca):.2f}")
+    log.info(f"  Log-likelihood: {model.score(X_fit):.2f}")
 
-    # ── Step 4: Viterbi decode ────────────────────────────────
-    log.info("Decoding regime sequence (Viterbi)...")
-    raw_labels = model.predict(X_pca)
+    # ── Step 4: Causal forward-filter decode (no Viterbi look-ahead) ─
+    log.info("Decoding regime sequence (causal forward filter)...")
+    raw_labels, filtered_probs = _forward_filter_regimes(model, X_pca)
 
     # ── Step 5: Auto-label regimes ────────────────────────────
     log.info("Auto-labelling regimes using price statistics...")
@@ -160,10 +178,10 @@ def train_hmm(
         "raw_label":   raw_labels,
     }).set_index("date")
 
-    # Add regime probabilities (soft assignments)
-    probs = model.predict_proba(X_pca)
+    # Add regime probabilities (causal filtered — no future data)
     for i in range(n_regimes):
-        labels_df[f"prob_{i}"] = probs[:, regime_map.get(i, i)]
+        mapped = regime_map.get(i, i)
+        labels_df[f"prob_{mapped}"] = filtered_probs[:, i]
 
     # ── Step 7: Save everything ───────────────────────────────
     _save_model(model, pca, scaler, regime_map, save_path)
@@ -236,6 +254,35 @@ def load_regime_labels(save_dir: str = "models") -> Optional[pd.DataFrame]:
 
 
 # ── Internal helpers ──────────────────────────────────────────
+
+def _forward_filter_regimes(model, X_pca: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Causal regime decoding using the forward algorithm only.
+
+    Unlike Viterbi / forward-backward, each label at time t uses
+    observations y_1..y_t only — safe for RL training and backtests.
+    """
+    log_prob = model._compute_log_likelihood(X_pca)
+    log_start = np.log(model.startprob_ + 1e-300)
+    log_trans = np.log(model.transmat_ + 1e-300)
+
+    n_samples, n_components = log_prob.shape
+    filtered_probs = np.zeros((n_samples, n_components))
+    labels         = np.zeros(n_samples, dtype=int)
+
+    log_alpha = log_start + log_prob[0]
+    log_alpha -= logsumexp(log_alpha)
+    filtered_probs[0] = np.exp(log_alpha)
+    labels[0]         = int(np.argmax(log_alpha))
+
+    for t in range(1, n_samples):
+        log_alpha = logsumexp(log_alpha[:, np.newaxis] + log_trans, axis=0) + log_prob[t]
+        log_alpha -= logsumexp(log_alpha)
+        filtered_probs[t] = np.exp(log_alpha)
+        labels[t]         = int(np.argmax(log_alpha))
+
+    return labels, filtered_probs
+
 
 def _load_and_align_states(states_dir: Path, config: dict):
     """
@@ -353,7 +400,7 @@ def _save_model(model, pca, scaler, regime_map, save_path: Path):
         "pca":        pca,
         "scaler":     scaler,
         "regime_map": regime_map,
-        "n_regimes":  N_REGIMES,
+        "n_regimes":  n_regimes,
         "pca_dims":   PCA_DIMS,
     }
     path = save_path / "hmm_regime_detector.pkl"

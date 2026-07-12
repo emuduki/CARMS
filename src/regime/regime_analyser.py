@@ -108,19 +108,23 @@ def _compute_transitions(labels_df: pd.DataFrame) -> pd.DataFrame:
     P[i,j] = probability of transitioning from regime i to regime j.
     Diagonal = probability of staying in the same regime (persistence).
     """
-    regimes = labels_df["regime"].values
-    n       = 4
-    counts  = np.zeros((n, n), dtype=int)
+    regimes = labels_df["regime"].dropna().astype(int).values
+    if len(regimes) < 2:
+        return pd.DataFrame()
+
+    n      = int(max(regimes.max(), len(REGIME_NAMES) - 1)) + 1
+    counts = np.zeros((n, n), dtype=int)
 
     for t in range(len(regimes) - 1):
         r_now  = int(regimes[t])
-        r_next = int(regimes[t+1])
+        r_next = int(regimes[t + 1])
         if 0 <= r_now < n and 0 <= r_next < n:
             counts[r_now, r_next] += 1
 
-    # Normalise rows to get probabilities
+    # Normalise rows to get probabilities (guard empty rows → no divide warning)
     row_sums = counts.sum(axis=1, keepdims=True)
-    probs    = np.where(row_sums > 0, counts / row_sums, 0)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        probs = np.divide(counts, row_sums, out=np.zeros_like(counts, dtype=float), where=row_sums > 0)
 
     names = [REGIME_NAMES.get(i, f"r{i}") for i in range(n)]
     return pd.DataFrame(probs, index=names, columns=names).round(3)
