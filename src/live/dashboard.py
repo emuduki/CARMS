@@ -23,6 +23,12 @@ import pandas as pd
 from src.utils.logger import get_logger
 
 log = get_logger(__name__)
+# Optional Plotly import – if unavailable, provide a helpful error message
+try:
+    import plotly.graph_objects as go
+except ImportError:
+    go = None
+    log.error("Plotly is not installed. Run `pip install plotly` to enable charts.")
 
 REGIME_COLOURS = {
     "trending_up":   "#00e676",  # Neon Green

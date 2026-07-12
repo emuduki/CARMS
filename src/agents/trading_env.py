@@ -151,39 +151,33 @@ class TradingEnv:
         Returns:
             (obs, reward, terminated, truncated, info)
         """
-        action = float(np.clip(np.asarray(action).flatten()[0], -1.0, 1.0))
-
         # ── Execute trade ─────────────────────────────────────
-        old_position   = self.position
-        self.position  = action
-        traded         = abs(action - old_position) > 0.01
+        old_position = self.position
+        # Action determines desired next position
+        new_position = float(np.clip(np.asarray(action).flatten()[0], -1.0, 1.0))
+        traded = abs(new_position - old_position) > 0.01
 
         # ── Price change ──────────────────────────────────────
         if self.t + 1 >= self.n_steps:
             terminated = True
             return self._get_obs(), 0.0, terminated, False, self._get_info()
 
-        price_now  = self.prices[self.t]
+        price_now = self.prices[self.t]
         price_next = self.prices[self.t + 1]
         log_return = float(np.log(price_next / (price_now + 1e-8)))
 
-        # ── Portfolio update ──────────────────────────────────
-        position_return  = self.position * log_return
-        transaction_cost = TRANSACTION_COST * abs(action - old_position) if traded else 0.0
-        step_return      = position_return - transaction_cost
-
+        # ── Portfolio update (using previous position) ───────────────────────
+        position_return = old_position * log_return
+        transaction_cost = TRANSACTION_COST * abs(new_position - old_position) if traded else 0.0
+        step_return = position_return - transaction_cost
         self.portfolio_val *= np.exp(step_return)
-        self.peak_val       = max(self.peak_val, self.portfolio_val)
-        drawdown            = (self.peak_val - self.portfolio_val) / self.peak_val
-        self.holding_days   = self.holding_days + 1 if not traded else 0
+        self.peak_val = max(self.peak_val, self.portfolio_val)
+        drawdown = (self.peak_val - self.portfolio_val) / self.peak_val
+        self.holding_days = self.holding_days + 1 if not traded else 0
         if traded:
             self.trade_count += 1
-
-        self.episode_returns.append(step_return)
-        self.t += 1
-
-        # ── Reward ────────────────────────────────────────────
-        reward = self._compute_reward(step_return, drawdown)
+        # Update to new position after accounting for reward
+        self.position = new_position
 
         # ── Termination ───────────────────────────────────────
         terminated = drawdown > MAX_DRAWDOWN or self.t >= self.n_steps - 1
