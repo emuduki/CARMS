@@ -23,10 +23,8 @@ import numpy as np
 import pandas as pd
 
 from src.utils.logger import get_logger
-from src.regime.hmm_detector import (
-    train_hmm, load_regime_labels, load_hmm,
-    REGIME_NAMES, REGIME_COLOURS,
-)
+from src.regime.hmm_detector import train_hmm, load_regime_labels, load_hmm
+from src.regime.constants import REGIME_NAMES, REGIME_COLOURS
 from src.regime.regime_analyser import analyse_regimes
 
 log = get_logger(__name__)

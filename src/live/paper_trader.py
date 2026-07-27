@@ -289,7 +289,13 @@ def run_paper_trade_simulation(
         Dict of performance metrics.
     """
     from src.features.indicators import load_features
+    from src.regime.hmm_detector import load_hmm
+from src.regime.constants import REGIME_NAMES, REGIME_COLOURS
+
+# Lazy import for load_regime_labels to avoid circular dependency
+def _get_load_regime_labels():
     from src.regime.hmm_detector import load_regime_labels
+    return load_regime_labels
 
     log.info("Running paper trade simulation on historical test data...")
     log.info(f"  Simulating {n_ticks} trading days")
@@ -311,7 +317,7 @@ def run_paper_trade_simulation(
         agents[agent_name] = agent
 
     meta    = load_meta_controller(save_dir)
-    labels  = load_regime_labels(save_dir)
+    labels  = _get_load_regime_labels()(save_dir)
 
     # Load test period state vectors
     states_dir = Path(config["data"]["processed_dir"]) / "states"

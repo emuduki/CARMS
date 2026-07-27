@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 
 from src.utils.logger import get_logger
-from src.regime.hmm_detector import REGIME_NAMES, REGIME_COLOURS, load_regime_labels
+from src.regime.constants import REGIME_NAMES, REGIME_COLOURS
 
 log = get_logger(__name__)
 
