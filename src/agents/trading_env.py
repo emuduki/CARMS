@@ -170,20 +170,26 @@ class TradingEnv:
         position_return = old_position * log_return
         transaction_cost = TRANSACTION_COST * abs(new_position - old_position) if traded else 0.0
         step_return = position_return - transaction_cost
+        # Update portfolio value
         self.portfolio_val *= np.exp(step_return)
+        # Update peak value and drawdown after portfolio change
         self.peak_val = max(self.peak_val, self.portfolio_val)
         drawdown = (self.peak_val - self.portfolio_val) / self.peak_val
+        # Update holding days and trade count
         self.holding_days = self.holding_days + 1 if not traded else 0
         if traded:
             self.trade_count += 1
-        # Update to new position after accounting for reward
+        # Record return and advance timestep
+        self.episode_returns.append(step_return)
+        self.t += 1
+        # Update position after accounting for reward
         self.position = new_position
 
         # ── Termination ───────────────────────────────────────
         terminated = drawdown > MAX_DRAWDOWN or self.t >= self.n_steps - 1
         truncated  = False
 
-        return self._get_obs(), reward, terminated, truncated, self._get_info()
+        return self._get_obs(), self._compute_reward(step_return, drawdown), terminated, truncated, self._get_info()
 
     def _compute_reward(self, step_return: float, drawdown: float) -> float:
         """

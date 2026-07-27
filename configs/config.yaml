@@ -6,8 +6,8 @@
  
 #  API Keys 
 api_keys:
-  news_api: "a5d953c22514408aa23d11496eaa7a06"        # newsapi.org (free)
-  fred_api: "ff68a45463cb4d6e97b4788cdf544bda"     # fred.stlouisfed.org (free)
+  news_api: "a5d953c22514408aa23d11496eaa7a06"        
+  fred_api: "ff68a45463cb4d6e97b4788cdf544bda"     
   binance_key: ""                     # Optional — public data needs no key
   binance_secret: ""
  

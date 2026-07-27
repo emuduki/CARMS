@@ -400,8 +400,6 @@ def _save_model(model, pca, scaler, regime_map, save_path: Path):
         "pca":        pca,
         "scaler":     scaler,
         "regime_map": regime_map,
-        "n_regimes":  n_regimes,
-        "pca_dims":   PCA_DIMS,
     }
     path = save_path / "hmm_regime_detector.pkl"
     with open(path, "wb") as f:
