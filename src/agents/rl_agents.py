@@ -136,13 +136,17 @@ class PPOAgent:
       n_epochs    = 10    (number of update passes per batch)
     """
 
-    def __init__(self, obs_dim: int, device: str = "cpu", lr: float = LR_ACTOR, n_steps: int = 256):
+    def __init__(self, obs_dim: int, device: str = "cpu", lr: float = LR_ACTOR, n_steps: int = 256, batch_size: int = 64, n_epochs: int = 10, learning_rate: float = None):
         self.device  = device
         self.n_steps = n_steps
+        self.batch_size = batch_size
+        self.n_epochs = n_epochs
         self.actor   = PPOActor(obs_dim).to(device)
         self.critic  = PPOCritic(obs_dim).to(device)
-        self.opt_a   = torch.optim.Adam(self.actor.parameters(),  lr=lr)
-        self.opt_c   = torch.optim.Adam(self.critic.parameters(), lr=lr * 2)
+        # Use learning_rate if provided, otherwise use lr
+        actual_lr = learning_rate if learning_rate is not None else lr
+        self.opt_a   = torch.optim.Adam(self.actor.parameters(),  lr=actual_lr)
+        self.opt_c   = torch.optim.Adam(self.critic.parameters(), lr=actual_lr * 2)
 
         # Rollout buffer
         self._clear_buffer()
