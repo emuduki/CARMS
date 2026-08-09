@@ -136,8 +136,9 @@ class PPOAgent:
       n_epochs    = 10    (number of update passes per batch)
     """
 
-    def __init__(self, obs_dim: int, device: str = "cpu", lr: float = LR_ACTOR):
+    def __init__(self, obs_dim: int, device: str = "cpu", lr: float = LR_ACTOR, n_steps: int = 256):
         self.device  = device
+        self.n_steps = n_steps
         self.actor   = PPOActor(obs_dim).to(device)
         self.critic  = PPOCritic(obs_dim).to(device)
         self.opt_a   = torch.optim.Adam(self.actor.parameters(),  lr=lr)
