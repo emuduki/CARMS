@@ -35,7 +35,7 @@ log = get_logger(__name__)
 # Training config
 N_EPISODES_PPO  = 600    # Forex and Gold (increased for better convergence)
 N_EPISODES_SAC  = 600    # Crypto (reduced — SAC converges faster with tuned reward)
-ROLLOUT_STEPS   = 256    # PPO: smaller rollouts = more frequent updates
+ROLLOUT_STEPS   = 4096   # PPO: increased for better stability, more data per update
 PPO_EPOCHS      = 8      # PPO: update epochs per rollout
 SAC_BATCH       = 128    # SAC: smaller batch = more frequent updates early on
 SAC_UPDATE_FREQ = 2      # SAC: 2 updates per step for faster learning
