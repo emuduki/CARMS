@@ -99,9 +99,15 @@ class PaperTrader:
                 continue
 
             if agent_type == "ppo":
-                agent = PPOAgent(obs_dim, device=self.device)
+                agent = PPOAgent(obs_dim, device=self.device,
+                               lr=self.config.get("ppo_lr", 0.0003),
+                               n_steps=self.config.get("ppo_n_steps", 4096),
+                               batch_size=self.config.get("ppo_batch_size", 64),
+                               n_epochs=self.config.get("ppo_epochs", 8),
+                               learning_rate=self.config.get("ppo_lr", 0.0003))
             else:
-                agent = SACAgent(obs_dim, device=self.device)
+                agent = SACAgent(obs_dim, device=self.device,
+                               lr=self.config.get("sac_lr", 0.0003))
 
             agent.load(str(ckpt_path))
             agents[agent_name] = agent
@@ -309,10 +315,16 @@ def _get_load_regime_labels():
         ckpt_path  = Path(save_dir) / f"{agent_type}_{agent_name}.pt"
         if not ckpt_path.exists():
             continue
-        if agent_type == "ppo":
-            agent = PPOAgent(obs_dim, device=device)
-        else:
-            agent = SACAgent(obs_dim, device=device)
+if agent_type == "ppo":
+                agent = PPOAgent(obs_dim, device=device,
+                               lr=config.get("ppo_lr", 0.0003),
+                               n_steps=config.get("ppo_n_steps", 4096),
+                               batch_size=config.get("ppo_batch_size", 64),
+                               n_epochs=config.get("ppo_epochs", 8),
+                               learning_rate=config.get("ppo_lr", 0.0003))
+            else:
+                agent = SACAgent(obs_dim, device=device,
+                               lr=config.get("sac_lr", 0.0003))
         agent.load(str(ckpt_path))
         agents[agent_name] = agent
 

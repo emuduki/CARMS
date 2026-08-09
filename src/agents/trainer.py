@@ -148,7 +148,12 @@ def train_ppo_agent(
         return pd.DataFrame()
 
     obs_dim = list(envs.values())[0].obs_dim
-    agent   = PPOAgent(obs_dim, device=device)
+    agent   = PPOAgent(obs_dim, device=device,
+                     lr=config.get("ppo_lr", 0.0003),
+                     n_steps=ROLLOUT_STEPS,
+                     batch_size=config.get("ppo_batch_size", 64),
+                     n_epochs=PPO_EPOCHS,
+                     learning_rate=config.get("ppo_lr", 0.0003))
     sym_list = list(envs.keys())
 
     metrics_rows = []
@@ -240,7 +245,8 @@ def train_sac_agent(
         return pd.DataFrame()
 
     obs_dim  = list(envs.values())[0].obs_dim
-    agent    = SACAgent(obs_dim, device=device)
+    agent    = SACAgent(obs_dim, device=device,
+                       lr=config.get("sac_lr", 0.0003))
     sym_list = list(envs.keys())
 
     metrics_rows = []
@@ -333,9 +339,15 @@ def evaluate_agent(
 
         obs_dim = env.obs_dim
         if agent_type == "ppo":
-            agent = PPOAgent(obs_dim, device=device)
+            agent = PPOAgent(obs_dim, device=device,
+                           lr=config.get("ppo_lr", 0.0003),
+                           n_steps=ROLLOUT_STEPS,
+                           batch_size=config.get("ppo_batch_size", 64),
+                           n_epochs=PPO_EPOCHS,
+                           learning_rate=config.get("ppo_lr", 0.0003))
         else:
-            agent = SACAgent(obs_dim, device=device)
+            agent = SACAgent(obs_dim, device=device,
+                           lr=config.get("sac_lr", 0.0003))
         agent.load(str(path))
 
         for ep in range(n_episodes):

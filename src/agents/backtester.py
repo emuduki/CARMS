@@ -90,9 +90,15 @@ def _backtest_single(
 
     obs_dim = env.obs_dim
     if agent_type == "ppo":
-        agent = PPOAgent(obs_dim, device=device)
+        agent = PPOAgent(obs_dim, device=device,
+                       lr=config.get("ppo_lr", 0.0003),
+                       n_steps=config.get("ppo_n_steps", 4096),
+                       batch_size=config.get("ppo_batch_size", 64),
+                       n_epochs=config.get("ppo_epochs", 8),
+                       learning_rate=config.get("ppo_lr", 0.0003))
     else:
-        agent = SACAgent(obs_dim, device=device)
+        agent = SACAgent(obs_dim, device=device,
+                       lr=config.get("sac_lr", 0.0003))
 
     ckpt = Path(save_dir) / f"{agent_type}_{agent_name}.pt"
     agent.load(str(ckpt))
